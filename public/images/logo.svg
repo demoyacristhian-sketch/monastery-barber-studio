@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="1200" height="200">
+  <defs>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F5D98B"/>
+      <stop offset="50%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#8B6914"/>
+    </linearGradient>
+  </defs>
+  <!-- Crown above O -->
+  <g transform="translate(540, 8)">
+    <polygon points="60,0 80,30 100,10 120,30 140,0 160,30 180,10 190,38 10,38 20,10 40,30" fill="url(#goldGrad)" stroke="#C9A84C" stroke-width="1"/>
+    <circle cx="60" cy="0" r="6" fill="#C9A84C"/>
+    <circle cx="100" cy="10" r="5" fill="#C9A84C"/>
+    <circle cx="140" cy="0" r="6" fill="#C9A84C"/>
+    <circle cx="180" cy="10" r="5" fill="#C9A84C"/>
+  </g>
+  <!-- MONASTERY text -->
+  <text x="600" y="130" font-family="Georgia, serif" font-size="90" font-weight="900" text-anchor="middle" fill="#CC0000" letter-spacing="8">MONASTERY</text>
+  <!-- Gold line left -->
+  <line x1="80" y1="158" x2="340" y2="158" stroke="url(#goldGrad)" stroke-width="2"/>
+  <!-- Gold line right -->
+  <line x1="860" y1="158" x2="1120" y2="158" stroke="url(#goldGrad)" stroke-width="2"/>
+  <!-- Barber Studio script -->
+  <text x="600" y="178" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-style="italic" text-anchor="middle" fill="#FFFFFF" letter-spacing="4">Barber Studio</text>
+</svg>

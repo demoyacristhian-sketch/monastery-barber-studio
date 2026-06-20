@@ -1,26 +1,253 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+  50%       { box-shadow: 0 0 0 14px rgba(201,168,76,0); }
+}
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Barber pole ── */
+@keyframes barberSpin {
+  from { background-position: 0 0; }
+  to   { background-position: 0 40px; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Hero CSS "video" atmosphere ── */
+@keyframes heroBgPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+@keyframes heroBeam {
+  0%   { transform: translateX(-110%) skewX(-12deg); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 0.7; }
+  100% { transform: translateX(210%) skewX(-12deg); opacity: 0; }
+}
+@keyframes heroBokeh1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  50%       { transform: translate(18px, -22px) scale(1.35); opacity: 0.55; }
+}
+@keyframes heroBokeh2 {
+  0%, 100% { transform: translate(0, 0) scale(1.1); opacity: 0.2; }
+  50%       { transform: translate(-14px, 16px) scale(0.8); opacity: 0.38; }
+}
+
+/* ── Monastery custom atmospheric bg ── */
+@keyframes blindsScan {
+  from { transform: translateY(0) rotate(-72deg); }
+  to   { transform: translateY(80px) rotate(-72deg); }
+}
+@keyframes mirrorGlow {
+  0%, 100% { opacity: 0.45; transform: scale(0.95); }
+  50%       { opacity: 0.75; transform: scale(1.06); }
+}
+@keyframes amberDrift {
+  0%        { transform: translate(0, 0) scale(1); opacity: 0.35; }
+  33%       { transform: translate(18px, -22px) scale(1.18); opacity: 0.55; }
+  66%       { transform: translate(-12px, 14px) scale(0.9); opacity: 0.3; }
+  100%      { transform: translate(0, 0) scale(1); opacity: 0.35; }
+}
+@keyframes spotlight {
+  0%   { transform: translateX(-110%) skewX(-8deg); opacity: 0; }
+  18%  { opacity: 1; }
+  82%  { opacity: 0.6; }
+  100% { transform: translateX(210%) skewX(-8deg); opacity: 0; }
+}
+@keyframes scrollArrow {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50%       { transform: translateY(7px); opacity: 1; }
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: Inter, system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #C9A84C; border-radius: 3px; }
+
+.animate-fadeInUp     { animation: fadeInUp 0.8s ease forwards; }
+.animate-fadeIn       { animation: fadeIn 1s ease forwards; }
+.animate-slideInLeft  { animation: slideInLeft 0.8s ease forwards; }
+.animate-slideInRight { animation: slideInRight 0.8s ease forwards; }
+.animate-float        { animation: floatUp 3s ease-in-out infinite; }
+
+.gold-text {
+  background: linear-gradient(135deg, #F5D98B 0%, #C9A84C 40%, #8B6914 70%, #C9A84C 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+.gold-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #C9A84C 30%, #C9A84C 70%, transparent);
+}
+
+@layer components {
+  .btn-gold {
+    background: linear-gradient(135deg, #F5D98B, #C9A84C, #8B6914);
+    background-size: 200% auto;
+    color: #000;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    animation: pulseGold 2.5s infinite;
+    white-space: nowrap;
+  }
+  .btn-gold:hover {
+    background-position: right center;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(201,168,76,0.45);
+  }
+
+  .btn-outline {
+    border: 1px solid #C9A84C;
+    color: #C9A84C;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .btn-outline:hover {
+    background: rgba(201,168,76,0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(201,168,76,0.2);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.card-premium {
+  background: #0d0d0d;
+  border: 1px solid #1f1f1f;
+  transition: all 0.35s ease;
+}
+.card-premium:hover {
+  border-color: rgba(201,168,76,0.5);
+  transform: translateY(-5px);
+  box-shadow: 0 24px 50px rgba(0,0,0,0.7), 0 0 20px rgba(201,168,76,0.08);
+}
+
+input, textarea, select {
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  color: #fff;
+  border-radius: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #C9A84C;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.12);
+}
+input::placeholder, textarea::placeholder { color: #444; }
+select option { background: #111; color: #fff; }
+label { display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #888; margin-bottom: 0.4rem; }
+
+.service-tag {
+  background: #0d0d0d;
+  border: 1px solid #1f1f1f;
+  padding: 0.6rem 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: #bbb;
+  transition: all 0.2s;
+  cursor: default;
+}
+.service-tag:hover {
+  border-color: #C9A84C;
+  color: #C9A84C;
+  background: rgba(201,168,76,0.04);
+}
+
+.nav-link {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #aaa;
+  transition: color 0.2s;
+}
+.nav-link:hover { color: #C9A84C; }
+
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #C9A84C;
+}
+
+.divider-gold {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(to right, #C9A84C, #F5D98B);
+  margin: 1rem auto;
+}
+
+.barbero-photo {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+  border: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Barber pole stripes (used inside SVG foreignObject) ── */
+.barber-pole-stripes {
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    #8A1212 0px,  #8A1212 7px,
+    #e8e2d4 7px,  #e8e2d4 14px,
+    #0C2259 14px, #0C2259 21px,
+    #e8e2d4 21px, #e8e2d4 28px
+  );
+  background-size: 28px 28px;
+  animation: barberSpin 1.6s linear infinite;
 }
