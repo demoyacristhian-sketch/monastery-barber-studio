@@ -251,3 +251,24 @@ label { display: block; font-size: 0.7rem; letter-spacing: 0.12em; text-transfor
   background-size: 28px 28px;
   animation: barberSpin 1.6s linear infinite;
 }
+
+/* ── Admin panel: tema blanco ── */
+[data-claro="true"] main {
+  color: #1a1a1a;
+}
+[data-claro="true"] main h1,
+[data-claro="true"] main h2,
+[data-claro="true"] main p.text-white,
+[data-claro="true"] main .text-white {
+  color: #1a1a1a !important;
+}
+[data-claro="true"] main .text-\[\#888\],
+[data-claro="true"] main .text-\[\#777\],
+[data-claro="true"] main .text-\[\#555\] {
+  color: #444444 !important;
+}
+[data-claro="true"] main .text-\[\#444\],
+[data-claro="true"] main .text-\[\#333\],
+[data-claro="true"] main .text-\[\#222\] {
+  color: #666666 !important;
+}

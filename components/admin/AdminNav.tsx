@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import { useState } from "react";
@@ -27,18 +28,20 @@ export default function AdminNav() {
   }
 
   return (
-    <aside
-      className="w-56 shrink-0 border-r flex flex-col"
-      style={{
-        background: "var(--admin-bg)",
-        borderColor: "var(--admin-border)",
-        minHeight: "100vh",
-      }}
-    >
-      {/* Logo */}
-      <div className="px-5 py-6 border-b" style={{ borderColor: "var(--admin-border)" }}>
-        <p className="text-[#C9A84C] font-serif text-lg font-bold tracking-wide">Monastery</p>
-        <p className="text-[#333] text-[10px] tracking-widest uppercase mt-0.5">Panel Admin</p>
+    <aside className="w-56 shrink-0 flex flex-col" style={{ background: "#080808", borderRight: "1px solid #161616", minHeight: "100vh" }}>
+      {/* Logo — siempre sobre fondo oscuro */}
+      <div className="px-5 pt-6 pb-5 border-b border-[#161616]">
+        <Link href="/admin">
+          <Image
+            src="/images/logo.svg"
+            alt="Monastery Barber Studio"
+            width={160}
+            height={27}
+            className="w-full h-auto max-h-12 object-contain"
+            priority
+          />
+        </Link>
+        <p className="text-[#2a2a2a] text-[9px] tracking-widest uppercase mt-2 text-center">Panel Admin</p>
       </div>
 
       {/* Nav */}
@@ -51,17 +54,15 @@ export default function AdminNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm transition-all"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm transition-all rounded-sm"
               style={activo ? {
-                background: "rgba(201,168,76,0.08)",
+                background: "rgba(201,168,76,0.10)",
                 color: "#C9A84C",
                 borderLeft: "2px solid #C9A84C",
                 marginLeft: "-1px",
-              } : {
-                color: "#555",
-              }}
+              } : { color: "#444" }}
               onMouseEnter={e => { if (!activo) (e.currentTarget as HTMLElement).style.color = "#999"; }}
-              onMouseLeave={e => { if (!activo) (e.currentTarget as HTMLElement).style.color = "#555"; }}
+              onMouseLeave={e => { if (!activo) (e.currentTarget as HTMLElement).style.color = "#444"; }}
             >
               <span className="text-sm w-4 text-center leading-none">{item.icon}</span>
               {item.label}
@@ -71,45 +72,45 @@ export default function AdminNav() {
       </nav>
 
       {/* Selector de tema */}
-      <div className="px-4 py-3 border-t" style={{ borderColor: "var(--admin-border)" }}>
+      <div className="px-4 py-3 border-t border-[#161616]">
         <button
           onClick={() => setMostrarTemas(!mostrarTemas)}
-          className="flex items-center gap-2 w-full text-left text-xs text-[#444] hover:text-[#888] transition-colors"
+          className="flex items-center gap-2 w-full text-left text-xs text-[#333] hover:text-[#777] transition-colors"
         >
           <span
-            className="w-3 h-3 rounded-full border border-[#333]"
-            style={{ background: TEMAS.find(t => t.id === tema)?.bg }}
+            className="w-3 h-3 rounded-full border border-[#333] shrink-0"
+            style={{ background: TEMAS.find(t => t.id === tema)?.bg ?? "#080808" }}
           />
           Tema de color
-          <span className="ml-auto">{mostrarTemas ? "↑" : "↓"}</span>
+          <span className="ml-auto opacity-60">{mostrarTemas ? "↑" : "↓"}</span>
         </button>
 
         {mostrarTemas && (
-          <div className="mt-2 grid grid-cols-3 gap-1.5">
+          <div className="mt-3 grid grid-cols-4 gap-1.5">
             {TEMAS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => { setTema(t.id as TemaId); setMostrarTemas(false); }}
                 title={t.label}
-                className="flex flex-col items-center gap-1 p-1.5 rounded transition-all"
+                className="flex flex-col items-center gap-1 p-1.5 transition-all"
                 style={{
-                  background: tema === t.id ? "rgba(201,168,76,0.1)" : "transparent",
-                  border: tema === t.id ? "1px solid rgba(201,168,76,0.4)" : "1px solid transparent",
+                  background: tema === t.id ? "rgba(201,168,76,0.10)" : "transparent",
+                  border: tema === t.id ? "1px solid rgba(201,168,76,0.35)" : "1px solid transparent",
                 }}
               >
                 <span
-                  className="w-5 h-5 rounded-full border border-[#222]"
-                  style={{ background: t.bg }}
+                  className="w-5 h-5 rounded-full border border-[#2a2a2a]"
+                  style={{ background: t.bg, boxShadow: t.claro ? "inset 0 0 0 1px #ccc" : "none" }}
                 />
-                <span className="text-[9px] text-[#444] leading-none">{t.label}</span>
+                <span className="text-[8px] text-[#333] leading-none">{t.label}</span>
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* Footer */}
-      <div className="px-5 py-4 border-t" style={{ borderColor: "var(--admin-border)" }}>
+      {/* Cerrar sesión */}
+      <div className="px-5 py-4 border-t border-[#161616]">
         <button
           onClick={cerrarSesion}
           className="text-xs text-[#2a2a2a] hover:text-[#C9A84C] transition-colors w-full text-left"
