@@ -81,7 +81,7 @@ export default async function AdminDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
         {stats.map((s) => (
-          <div key={s.label} className={`p-5 border ${s.alert ? "border-yellow-600/40 bg-yellow-950/10" : "border-[#111] bg-[#0a0a0a]"}`}>
+          <div key={s.label} className={`p-5 border ${s.alert ? "border-yellow-600/40 bg-yellow-950/10" : "border-[var(--admin-border)] bg-[var(--admin-surface)]"}`}>
             <p className={`text-2xl font-bold mb-1 ${s.alert ? "text-yellow-400" : "text-white"}`}>{s.value}</p>
             <p className="text-[#888] text-xs font-medium">{s.label}</p>
             <p className="text-[#444] text-[10px] mt-0.5">{s.sub}</p>
@@ -90,12 +90,12 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Últimas citas */}
-      <div className="border border-[#111] bg-[#0a0a0a]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#111]">
+      <div className="border border-[var(--admin-border)] bg-[var(--admin-surface)]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--admin-border)]">
           <h2 className="text-sm font-medium text-white">Últimas citas</h2>
           <a href="/admin/citas" className="text-xs text-[#C9A84C] hover:underline">Ver todas →</a>
         </div>
-        <div className="divide-y divide-[#0f0f0f]">
+        <div className="divide-y divide-[var(--admin-border)]">
           {ultimasCitas.length === 0 ? (
             <p className="px-6 py-8 text-[#444] text-sm text-center">Sin citas registradas aún.</p>
           ) : (

@@ -78,12 +78,12 @@ export default function CitasAdmin({
           type="date"
           defaultValue={filtros.fecha ?? ""}
           onChange={(e) => actualizarFiltro("fecha", e.target.value)}
-          className="bg-[#0a0a0a] border border-[#222] text-white text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
+          className="bg-[var(--admin-surface)] border border-[var(--admin-border)] text-white text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
         />
         <select
           defaultValue={filtros.barbero ?? ""}
           onChange={(e) => actualizarFiltro("barbero", e.target.value)}
-          className="bg-[#0a0a0a] border border-[#222] text-[#888] text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
+          className="bg-[var(--admin-surface)] border border-[var(--admin-border)] text-[#888] text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
         >
           <option value="">Todos los barberos</option>
           {barberos.map((b) => (
@@ -93,7 +93,7 @@ export default function CitasAdmin({
         <select
           defaultValue={filtros.estado ?? ""}
           onChange={(e) => actualizarFiltro("estado", e.target.value)}
-          className="bg-[#0a0a0a] border border-[#222] text-[#888] text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
+          className="bg-[var(--admin-surface)] border border-[var(--admin-border)] text-[#888] text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
         >
           <option value="">Todos los estados</option>
           {ESTADOS_LISTA.map((e) => (
@@ -103,7 +103,7 @@ export default function CitasAdmin({
         {(filtros.fecha || filtros.barbero || filtros.estado) && (
           <button
             onClick={() => router.push("/admin/citas")}
-            className="text-xs text-[#555] hover:text-[#999] px-3 py-2 border border-[#1a1a1a] bg-[#0a0a0a]"
+            className="text-xs text-[#555] hover:text-[#999] px-3 py-2 border border-[var(--admin-border)] bg-[var(--admin-surface)]"
           >
             Limpiar filtros ×
           </button>
@@ -111,7 +111,7 @@ export default function CitasAdmin({
       </div>
 
       {/* Lista */}
-      <div className="border border-[#111] divide-y divide-[#0f0f0f]">
+      <div className="border border-[var(--admin-border)] divide-y divide-[var(--admin-border)]">
         {citas.length === 0 ? (
           <p className="px-6 py-10 text-[#444] text-sm text-center">No hay citas con estos filtros.</p>
         ) : (
@@ -120,9 +120,9 @@ export default function CitasAdmin({
             const acciones  = ACCIONES[cita.estado] ?? [];
 
             return (
-              <div key={cita.id} className="bg-[#0a0a0a]">
+              <div key={cita.id} className="bg-[var(--admin-surface)]">
                 <div
-                  className="px-6 py-4 flex items-start justify-between gap-4 flex-wrap cursor-pointer hover:bg-[#0d0d0d] transition-colors"
+                  className="px-6 py-4 flex items-start justify-between gap-4 flex-wrap cursor-pointer hover:bg-[var(--admin-border)] transition-colors"
                   onClick={() => setDetalle(esDetalle ? null : cita.id)}
                 >
                   {/* Info principal */}
@@ -155,7 +155,7 @@ export default function CitasAdmin({
 
                 {/* Panel expandido */}
                 {esDetalle && (
-                  <div className="px-6 pb-5 border-t border-[#111] pt-4 space-y-4">
+                  <div className="px-6 pb-5 border-t border-[var(--admin-border)] pt-4 space-y-4">
                     {cita.notas_cliente && (
                       <div>
                         <p className="text-[#444] text-xs uppercase tracking-widest mb-1">Notas del cliente</p>

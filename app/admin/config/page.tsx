@@ -52,9 +52,9 @@ export default async function ConfigPage() {
       {/* Sedes */}
       <section>
         <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-widest">Sedes</h2>
-        <div className="border border-[#111] divide-y divide-[#0f0f0f]">
+        <div className="border border-[var(--admin-border)] divide-y divide-[var(--admin-border)]">
           {sedes.map((sede: any) => (
-            <div key={sede.id} className="px-5 py-4 flex items-center justify-between bg-[#0a0a0a]">
+            <div key={sede.id} className="px-5 py-4 flex items-center justify-between bg-[var(--admin-surface)]">
               <div>
                 <p className="text-white text-sm font-medium">{sede.nombre}</p>
                 <p className="text-[#444] text-xs mt-0.5">{sede.direccion}</p>
@@ -68,11 +68,11 @@ export default async function ConfigPage() {
       {/* Barberos */}
       <section>
         <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-widest">Equipo</h2>
-        <div className="border border-[#111] divide-y divide-[#0f0f0f]">
+        <div className="border border-[var(--admin-border)] divide-y divide-[var(--admin-border)]">
           {barberos.map((b: any) => {
             const sede = (sedes as any[]).find((s) => s.id === b.sede_id);
             return (
-              <div key={b.id} className="px-5 py-4 flex items-center justify-between bg-[#0a0a0a]">
+              <div key={b.id} className="px-5 py-4 flex items-center justify-between bg-[var(--admin-surface)]">
                 <div>
                   <p className="text-white text-sm font-medium">{b.nombre}</p>
                   <p className="text-[#444] text-xs mt-0.5">{b.email} {sede ? `· ${sede.nombre}` : ""}</p>
@@ -91,9 +91,9 @@ export default async function ConfigPage() {
           {Object.entries(serviciosPorCategoria).map(([cat, svcs]) => (
             <div key={cat}>
               <p className="text-[#C9A84C] text-xs uppercase tracking-widest mb-2">{cat}</p>
-              <div className="border border-[#111] divide-y divide-[#0f0f0f]">
+              <div className="border border-[var(--admin-border)] divide-y divide-[var(--admin-border)]">
                 {(svcs as any[]).map((s) => (
-                  <div key={s.id} className="px-5 py-3 flex items-center justify-between bg-[#0a0a0a]">
+                  <div key={s.id} className="px-5 py-3 flex items-center justify-between bg-[var(--admin-surface)]">
                     <p className="text-white text-sm">{s.nombre}</p>
                     <div className="flex items-center gap-4">
                       <p className="text-[#555] text-xs">{s.duracion_min} min</p>

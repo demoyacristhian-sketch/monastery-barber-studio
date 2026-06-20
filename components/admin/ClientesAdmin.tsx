@@ -49,7 +49,7 @@ export default function ClientesAdmin({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar por nombre, email o teléfono..."
-          className="flex-1 bg-[#0a0a0a] border border-[#222] text-white text-sm px-4 py-2.5 placeholder-[#333] focus:outline-none focus:border-[#C9A84C]"
+          className="flex-1 bg-[var(--admin-surface)] border border-[var(--admin-border)] text-white text-sm px-4 py-2.5 placeholder-[#333] focus:outline-none focus:border-[#C9A84C]"
         />
         <button
           type="submit"
@@ -61,7 +61,7 @@ export default function ClientesAdmin({
           <button
             type="button"
             onClick={() => { setQ(""); router.push("/admin/clientes"); }}
-            className="px-4 py-2.5 border border-[#1a1a1a] text-[#444] text-sm hover:text-[#999]"
+            className="px-4 py-2.5 border border-[var(--admin-border)] text-[#444] text-sm hover:text-[#999]"
           >
             ×
           </button>
@@ -69,7 +69,7 @@ export default function ClientesAdmin({
       </form>
 
       {/* Lista */}
-      <div className="border border-[#111] divide-y divide-[#0f0f0f]">
+      <div className="border border-[var(--admin-border)] divide-y divide-[var(--admin-border)]">
         {clientes.length === 0 ? (
           <p className="px-6 py-10 text-[#444] text-sm text-center">
             {busqueda ? `Sin resultados para "${busqueda}"` : "No hay clientes aún."}
@@ -80,9 +80,9 @@ export default function ClientesAdmin({
             const esDetalle = detalle === c.id;
 
             return (
-              <div key={c.id} className="bg-[#0a0a0a]">
+              <div key={c.id} className="bg-[var(--admin-surface)]">
                 <div
-                  className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap cursor-pointer hover:bg-[#0d0d0d] transition-colors"
+                  className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap cursor-pointer hover:bg-[var(--admin-border)] transition-colors"
                   onClick={() => setDetalle(esDetalle ? null : c.id)}
                 >
                   <div className="flex-1 min-w-0">
@@ -110,7 +110,7 @@ export default function ClientesAdmin({
                 </div>
 
                 {esDetalle && (
-                  <div className="px-6 pb-5 border-t border-[#111] pt-4 space-y-3">
+                  <div className="px-6 pb-5 border-t border-[var(--admin-border)] pt-4 space-y-3">
                     <div className="grid grid-cols-2 gap-4 text-xs">
                       <div>
                         <p className="text-[#333] uppercase tracking-widest mb-1">Email</p>

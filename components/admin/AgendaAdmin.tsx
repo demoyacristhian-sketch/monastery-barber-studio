@@ -16,8 +16,8 @@ const ESTADO_COLOR: Record<string, string> = {
   pendiente:  "border-l-yellow-500 bg-yellow-950/20",
   confirmada: "border-l-blue-500 bg-blue-950/20",
   completada: "border-l-green-600 bg-green-950/20",
-  cancelada:  "border-l-[#333] bg-[#0a0a0a] opacity-40",
-  no_show:    "border-l-[#555] bg-[#0a0a0a] opacity-40",
+  cancelada:  "border-l-[#333] bg-[var(--admin-surface)] opacity-40",
+  no_show:    "border-l-[#555] bg-[var(--admin-surface)] opacity-40",
 };
 
 const HORAS = Array.from({ length: 13 }, (_, i) => i + 9); // 9h–21h
@@ -83,7 +83,7 @@ export default function AgendaAdmin({
             onChange={(e) =>
               router.push(`/admin/agenda?semana=${lunesDate.toISOString().slice(0, 10)}${e.target.value ? `&barbero=${e.target.value}` : ""}`)
             }
-            className="bg-[#0a0a0a] border border-[#222] text-[#888] text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
+            className="bg-[var(--admin-surface)] border border-[var(--admin-border)] text-[#888] text-sm px-3 py-2 focus:outline-none focus:border-[#C9A84C]"
           >
             <option value="">Todos los barberos</option>
             {barberos.map((b) => (
@@ -92,19 +92,19 @@ export default function AgendaAdmin({
           </select>
           <button
             onClick={semanaAnterior}
-            className="px-4 py-2 border border-[#1a1a1a] bg-[#0a0a0a] text-[#555] hover:text-white text-sm transition-colors"
+            className="px-4 py-2 border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[#555] hover:text-white text-sm transition-colors"
           >
             ←
           </button>
           <button
             onClick={() => router.push("/admin/agenda")}
-            className="px-4 py-2 border border-[#1a1a1a] bg-[#0a0a0a] text-[#555] hover:text-white text-xs transition-colors"
+            className="px-4 py-2 border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[#555] hover:text-white text-xs transition-colors"
           >
             Hoy
           </button>
           <button
             onClick={semanaSiguiente}
-            className="px-4 py-2 border border-[#1a1a1a] bg-[#0a0a0a] text-[#555] hover:text-white text-sm transition-colors"
+            className="px-4 py-2 border border-[var(--admin-border)] bg-[var(--admin-surface)] text-[#555] hover:text-white text-sm transition-colors"
           >
             →
           </button>
@@ -112,16 +112,16 @@ export default function AgendaAdmin({
       </div>
 
       {/* Grid semanal */}
-      <div className="border border-[#111] overflow-x-auto">
+      <div className="border border-[var(--admin-border)] overflow-x-auto">
         {/* Cabecera días */}
-        <div className="grid grid-cols-7 border-b border-[#111]">
+        <div className="grid grid-cols-7 border-b border-[var(--admin-border)]">
           <div className="px-3 py-3 text-[#333] text-xs"></div>
           {dias.map((d, i) => {
             const dStr   = d.toISOString().slice(0, 10);
             const esHoy  = dStr === hoy;
             const cc     = citasDelDia(d);
             return (
-              <div key={i} className={`px-3 py-3 border-l border-[#111] text-center ${esHoy ? "bg-[#C9A84C]/5" : ""}`}>
+              <div key={i} className={`px-3 py-3 border-l border-[var(--admin-border)] text-center ${esHoy ? "bg-[#C9A84C]/5" : ""}`}>
                 <p className={`text-xs font-medium ${esHoy ? "text-[#C9A84C]" : "text-[#555]"}`}>{DIAS_LABEL[i]}</p>
                 <p className={`text-lg font-bold mt-0.5 ${esHoy ? "text-white" : "text-[#333]"}`}>{d.getDate()}</p>
                 {cc.length > 0 && (
