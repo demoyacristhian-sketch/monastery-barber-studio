@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import { useState } from "react";
-import { TEMAS, useTema, type TemaId } from "./AdminTheme";
+import { TEMAS, useTema } from "./AdminTheme";
 
 const NAV = [
   { href: "/admin",          label: "Dashboard", icon: "◈" },
@@ -28,7 +28,10 @@ export default function AdminNav() {
   }
 
   return (
-    <aside className="w-56 shrink-0 flex flex-col" style={{ background: "#080808", borderRight: "1px solid #161616", minHeight: "100vh" }}>
+    <aside
+      className="w-56 shrink-0 flex flex-col"
+      style={{ background: "#080808", borderRight: "1px solid #161616", minHeight: "100vh" }}
+    >
       {/* Logo — siempre sobre fondo oscuro */}
       <div className="px-5 pt-6 pb-5 border-b border-[#161616]">
         <Link href="/admin">
@@ -41,26 +44,28 @@ export default function AdminNav() {
             priority
           />
         </Link>
-        <p className="text-[#2a2a2a] text-[9px] tracking-widest uppercase mt-2 text-center">Panel Admin</p>
+        <p className="text-[#2a2a2a] text-[9px] tracking-widest uppercase mt-2 text-center">
+          Panel Admin
+        </p>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-0.5">
         {NAV.map((item) => {
-          const activo = item.href === "/admin"
-            ? pathname === "/admin"
-            : pathname.startsWith(item.href);
+          const activo =
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm transition-all rounded-sm"
-              style={activo ? {
-                background: "rgba(201,168,76,0.10)",
-                color: "#C9A84C",
-                borderLeft: "2px solid #C9A84C",
-                marginLeft: "-1px",
-              } : { color: "#444" }}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm transition-all"
+              style={
+                activo
+                  ? { background: "rgba(201,168,76,0.10)", color: "#C9A84C", borderLeft: "2px solid #C9A84C", marginLeft: "-1px" }
+                  : { color: "#444" }
+              }
               onMouseEnter={e => { if (!activo) (e.currentTarget as HTMLElement).style.color = "#999"; }}
               onMouseLeave={e => { if (!activo) (e.currentTarget as HTMLElement).style.color = "#444"; }}
             >
@@ -78,11 +83,14 @@ export default function AdminNav() {
           className="flex items-center gap-2 w-full text-left text-xs text-[#333] hover:text-[#777] transition-colors"
         >
           <span
-            className="w-3 h-3 rounded-full border border-[#333] shrink-0"
-            style={{ background: TEMAS.find(t => t.id === tema)?.bg ?? "#080808" }}
+            className="w-3 h-3 rounded-full shrink-0"
+            style={{
+              background: TEMAS.find(t => t.id === tema)?.bg ?? "#0a0a0a",
+              border: TEMAS.find(t => t.id === tema)?.claro ? "1px solid #bbb" : "1px solid #333",
+            }}
           />
           Tema de color
-          <span className="ml-auto opacity-60">{mostrarTemas ? "↑" : "↓"}</span>
+          <span className="ml-auto opacity-50">{mostrarTemas ? "↑" : "↓"}</span>
         </button>
 
         {mostrarTemas && (
@@ -90,7 +98,7 @@ export default function AdminNav() {
             {TEMAS.map((t) => (
               <button
                 key={t.id}
-                onClick={() => { setTema(t.id as TemaId); setMostrarTemas(false); }}
+                onClick={() => { setTema(t.id); setMostrarTemas(false); }}
                 title={t.label}
                 className="flex flex-col items-center gap-1 p-1.5 transition-all"
                 style={{
@@ -99,8 +107,12 @@ export default function AdminNav() {
                 }}
               >
                 <span
-                  className="w-5 h-5 rounded-full border border-[#2a2a2a]"
-                  style={{ background: t.bg, boxShadow: t.claro ? "inset 0 0 0 1px #ccc" : "none" }}
+                  className="w-5 h-5 rounded-full"
+                  style={{
+                    background: t.bg,
+                    border: t.claro ? "1px solid #ccc" : "1px solid #222",
+                    boxShadow: tema === t.id ? "0 0 0 2px rgba(201,168,76,0.4)" : "none",
+                  }}
                 />
                 <span className="text-[8px] text-[#333] leading-none">{t.label}</span>
               </button>
