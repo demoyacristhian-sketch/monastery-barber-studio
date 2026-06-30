@@ -19,6 +19,8 @@ type Cita = {
   fecha_hora: string;
   estado: string;
   precio_final: number | null;
+  reagendar_solicitado?: boolean;
+  reagendar_motivo?: string | null;
   clientes: { nombre: string; telefono: string | null } | null;
   servicios: { nombre: string; duracion_minutos: number | null } | null;
   barberos:  { nombre: string } | null;
@@ -359,8 +361,20 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
                           </span>
                         </div>
                         <div>
-                          <div className="text-zinc-800 font-medium whitespace-nowrap">{c.clientes?.nombre ?? "—"}</div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-800 font-medium whitespace-nowrap">{c.clientes?.nombre ?? "—"}</span>
+                            {c.reagendar_solicitado && (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium whitespace-nowrap" title={c.reagendar_motivo ?? "Solicita reagendar"}>
+                                <RefreshCw className="w-2.5 h-2.5" /> Reagendar
+                              </span>
+                            )}
+                          </div>
                           {c.clientes?.telefono && <div className="text-xs text-zinc-400">{c.clientes.telefono}</div>}
+                          {c.reagendar_motivo && c.reagendar_solicitado && (
+                            <div className="text-xs text-amber-600 mt-0.5 max-w-[200px] truncate" title={c.reagendar_motivo}>
+                              {c.reagendar_motivo}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
