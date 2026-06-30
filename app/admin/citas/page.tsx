@@ -3,43 +3,26 @@ import type { Metadata } from "next";
 import CitasAdmin from "@/components/admin/CitasAdmin";
 
 export const metadata: Metadata = { title: "Citas | Admin Monastery" };
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
-async function getCitas(fecha?: string, barberoId?: string, estado?: string) {
+async function getCitas() {
   const admin = createAdminClient();
 
-  let q = admin
-    .from("citas")
-    .select("id, fecha_hora, estado, precio_final, notas_cliente, notas_barbero, clientes(id, nombre, telefono, email), barberos(id, nombre), servicios(nombre, duracion_minutos), sedes(nombre)")
-    .order("fecha_hora", { ascending: false })
-    .limit(100);
+  // Sin 'notas' en el SELECT — la columna puede no estar en el caché de PostgREST
+  // y haría fallar toda la query devolviendo array vacío.
+  const { data, error } = await (admin.from("citas") as any)
+    .select("id, fecha_hora, estado, precio_final, clientes(nombre, telefono), barberos(nombre), servicios(nombre, duracion_minutos), sedes(nombre)")
+    .order("fecha_hora", { ascending: true })
+    .limit(500);
 
-  if (fecha) {
-    q = q.gte("fecha_hora", `${fecha}T00:00:00`).lte("fecha_hora", `${fecha}T23:59:59`);
+  if (error) {
+    console.error("[CitasPage] getCitas error:", error.message);
+    return [];
   }
-  if (barberoId) q = q.eq("barbero_id", barberoId);
-  if (estado)    q = q.eq("estado", estado);
-
-  const { data } = await q;
   return data ?? [];
 }
 
-async function getBarberos() {
-  const admin = createAdminClient();
-  const { data } = await admin.from("barberos").select("id, nombre").eq("activo", true);
-  return data ?? [];
-}
-
-export default async function CitasPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ fecha?: string; barbero?: string; estado?: string }>;
-}) {
-  const sp      = await searchParams;
-  const [citas, barberos] = await Promise.all([
-    getCitas(sp.fecha, sp.barbero, sp.estado),
-    getBarberos(),
-  ]);
-
-  return <CitasAdmin citas={citas as any} barberos={barberos} filtros={sp} />;
+export default async function CitasPage() {
+  const citas = await getCitas();
+  return <CitasAdmin citas={citas as any} />;
 }

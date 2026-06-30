@@ -1,106 +1,100 @@
-import { createClient } from "@/lib/supabase-server";
-import type { Database } from "@/lib/database.types";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 
-type HorarioBarbero = Database["public"]["Tables"]["horarios_barbero"]["Row"];
-type BloqueoAgenda  = Database["public"]["Tables"]["bloqueos_agenda"]["Row"];
-type Cita           = Database["public"]["Tables"]["citas"]["Row"];
+const SPAIN_TZ = "Europe/Madrid";
 
-function generarSlots(horaInicio: string, horaFin: string): string[] {
+// Slots fijos: 09:00-14:00 y 16:00-21:00 en intervalos de 45 min
+function generarTodosLosSlots(): string[] {
   const slots: string[] = [];
-  const [sh, sm] = horaInicio.split(":").map(Number);
-  const [eh, em] = horaFin.split(":").map(Number);
-  let cur = sh * 60 + sm;
-  const end = eh * 60 + em;
-  while (cur + 30 <= end) {
-    slots.push(
-      `${String(Math.floor(cur / 60)).padStart(2, "0")}:${String(cur % 60).padStart(2, "0")}`
-    );
-    cur += 30;
+  const periodos = [
+    { inicio: 9 * 60, fin: 14 * 60 },
+    { inicio: 16 * 60, fin: 21 * 60 },
+  ];
+  for (const { inicio, fin } of periodos) {
+    let cur = inicio;
+    while (cur + 45 <= fin) {
+      const h = Math.floor(cur / 60);
+      const m = cur % 60;
+      slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+      cur += 45;
+    }
   }
   return slots;
+}
+
+// Convierte una fecha UTC a HH:MM en hora de España
+function toSpainHHMM(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: SPAIN_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const h = parts.find(p => p.type === "hour")?.value  ?? "00";
+  const m = parts.find(p => p.type === "minute")?.value ?? "00";
+  return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+}
+
+// Minutos desde medianoche en España para una fecha UTC
+function toSpainMinutes(date: Date): number {
+  const [h, m] = toSpainHHMM(date).split(":").map(Number);
+  return h * 60 + m;
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const barberoId = searchParams.get("barbero_id");
-  const fecha = searchParams.get("fecha"); // YYYY-MM-DD
+  const fecha     = searchParams.get("fecha"); // YYYY-MM-DD en hora España
 
   if (!barberoId || !fecha) return NextResponse.json({ slots: [] });
 
-  const supabase = await createClient();
-
-  // dia_semana: 1=Lun…6=Sáb, 0=Dom → no laborable
+  // Lunes=1 … Sábado=6 → laborable; Domingo=0 → cerrado
   const jsDay = new Date(fecha + "T12:00:00").getDay();
   if (jsDay === 0) return NextResponse.json({ slots: [] });
 
-  const { data: horariosRaw } = await supabase
-    .from("horarios_barbero")
-    .select("*")
+  const todosLosSlots = generarTodosLosSlots();
+
+  const admin = createAdminClient();
+
+  // Citas del barbero en la fecha seleccionada (± 1 día en UTC para cubrir desfases)
+  const { data: citasRaw } = await (admin.from("citas") as any)
+    .select("fecha_hora, duracion_minutos")
     .eq("barbero_id", barberoId)
-    .eq("dia_semana", jsDay)
-    .eq("activo", true);
+    .gte("fecha_hora", `${fecha}T00:00:00+00:00`)
+    .lte("fecha_hora", `${fecha}T23:59:59+00:00`)
+    .neq("estado", "cancelada");
 
-  const horarios = (horariosRaw ?? []) as HorarioBarbero[];
-  if (!horarios.length) return NextResponse.json({ slots: [] });
-
-  const todosLosSlots = horarios.flatMap((h) =>
-    generarSlots(h.hora_inicio, h.hora_fin)
-  );
-
-  const [citasRes, bloqueosRes] = await Promise.all([
-    supabase
-      .from("citas")
-      .select("*")
-      .eq("barbero_id", barberoId)
-      .gte("fecha_hora", `${fecha}T00:00:00`)
-      .lte("fecha_hora", `${fecha}T23:59:59`)
-      .neq("estado", "cancelada"),
-    supabase
-      .from("bloqueos_agenda")
-      .select("*")
-      .lte("fecha_inicio", `${fecha}T23:59:59`)
-      .gte("fecha_fin", `${fecha}T00:00:00`),
-  ]);
-
-  const citas   = (citasRes.data   ?? []) as Cita[];
-  const bloqueos = (bloqueosRes.data ?? []) as BloqueoAgenda[];
+  const citas = (citasRaw ?? []) as { fecha_hora: string; duracion_minutos: number | null }[];
 
   const ocupados = new Set<string>();
-
   for (const cita of citas) {
     const d = new Date(cita.fecha_hora);
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mm = String(d.getMinutes()).padStart(2, "0");
-    ocupados.add(`${hh}:${mm}`);
-    const slotsExtras = Math.max(0, Math.floor(cita.duracion_minutos / 30) - 1);
-    for (let i = 1; i <= slotsExtras; i++) {
-      const next = d.getHours() * 60 + d.getMinutes() + 30 * i;
-      ocupados.add(
-        `${String(Math.floor(next / 60)).padStart(2, "0")}:${String(next % 60).padStart(2, "0")}`
-      );
-    }
-  }
-
-  for (const bloqueo of bloqueos) {
-    const bStart = new Date(bloqueo.fecha_inicio);
-    const bEnd   = new Date(bloqueo.fecha_fin);
+    const inicioMin = toSpainMinutes(d);
+    const durMin    = cita.duracion_minutos ?? 45;
+    // Bloquear todos los slots que se solapan con esta cita
     for (const slot of todosLosSlots) {
-      const slotDate = new Date(`${fecha}T${slot}:00`);
-      if (slotDate >= bStart && slotDate < bEnd) ocupados.add(slot);
+      const [sh, sm] = slot.split(":").map(Number);
+      const slotMin  = sh * 60 + sm;
+      // Solapamiento: slot starts within [citaInicio, citaInicio+durMin)
+      if (slotMin >= inicioMin && slotMin < inicioMin + durMin) {
+        ocupados.add(slot);
+      }
     }
   }
 
-  const ahora   = new Date();
-  const hoyStr  = ahora.toISOString().slice(0, 10);
+  // Filtrar slots pasados si es hoy
+  const ahora    = new Date();
+  const ahoraMin = toSpainMinutes(ahora);
+  const fechaHoyEnEspana = new Intl.DateTimeFormat("en-CA", {
+    timeZone: SPAIN_TZ, year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(ahora); // YYYY-MM-DD
 
-  const disponibles = todosLosSlots.filter((slot) => {
+  const disponibles = todosLosSlots.filter(slot => {
     if (ocupados.has(slot)) return false;
-    if (fecha === hoyStr) {
-      const [h, m] = slot.split(":").map(Number);
-      const slotMin  = h * 60 + m;
-      const ahoraMin = ahora.getHours() * 60 + ahora.getMinutes() + 60;
-      if (slotMin <= ahoraMin) return false;
+    if (fecha === fechaHoyEnEspana) {
+      const [sh, sm] = slot.split(":").map(Number);
+      const slotMin  = sh * 60 + sm;
+      if (slotMin <= ahoraMin + 60) return false; // al menos 1h en el futuro
     }
     return true;
   });

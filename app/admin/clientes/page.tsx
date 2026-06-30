@@ -3,54 +3,18 @@ import type { Metadata } from "next";
 import ClientesAdmin from "@/components/admin/ClientesAdmin";
 
 export const metadata: Metadata = { title: "Clientes | Admin Monastery" };
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
-async function getClientes(busqueda?: string) {
+async function getClientes() {
   const admin = createAdminClient();
-
-  let q = admin
-    .from("clientes")
-    .select("id, nombre, email, telefono, notas, created_at, activo")
+  const { data } = await (admin.from("clientes") as any)
+    .select("*, citas(id, estado, precio_final, fecha_hora)")
     .order("created_at", { ascending: false })
-    .limit(200);
-
-  if (busqueda) {
-    q = q.or(`nombre.ilike.%${busqueda}%,email.ilike.%${busqueda}%,telefono.ilike.%${busqueda}%`);
-  }
-
-  const { data } = await q;
+    .limit(500);
   return data ?? [];
 }
 
-async function getClientesCitas() {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("citas")
-    .select("cliente_id, estado")
-    .in("estado", ["completada", "cancelada", "no_show", "confirmada", "pendiente"]);
-  return data ?? [];
-}
-
-export default async function ClientesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
-  const sp = await searchParams;
-  const [clientes, citasRaw] = await Promise.all([
-    getClientes(sp.q),
-    getClientesCitas(),
-  ]);
-
-  const conteosCitas = (citasRaw as any[]).reduce(
-    (acc: Record<string, { total: number; completadas: number }>, c) => {
-      if (!acc[c.cliente_id]) acc[c.cliente_id] = { total: 0, completadas: 0 };
-      acc[c.cliente_id].total++;
-      if (c.estado === "completada") acc[c.cliente_id].completadas++;
-      return acc;
-    },
-    {}
-  );
-
-  return <ClientesAdmin clientes={clientes as any} conteosCitas={conteosCitas} busqueda={sp.q} />;
+export default async function ClientesPage() {
+  const clientes = await getClientes();
+  return <ClientesAdmin clientes={clientes as any} />;
 }

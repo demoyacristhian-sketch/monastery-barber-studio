@@ -1,130 +1,111 @@
 import { createAdminClient } from "@/lib/supabase-admin";
-import type { Metadata } from "next";
+import DashboardOverview from "@/components/admin/DashboardOverview";
 
-export const metadata: Metadata = { title: "Dashboard | Admin Monastery" };
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
-async function getStats() {
-  const admin = createAdminClient();
-  const hoy   = new Date().toISOString().slice(0, 10);
-  const lunes  = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    return d.toISOString().slice(0, 10);
-  })();
-  const mesInicio = new Date().toISOString().slice(0, 7) + "-01";
-
-  const [
-    { count: citasHoy },
-    { count: citasPendientes },
-    { count: totalClientes },
-    { count: clientesSemana },
-    citasMes,
-    ultimasCitas,
-  ] = await Promise.all([
-    admin.from("citas").select("*", { count: "exact", head: true })
-      .gte("fecha_hora", `${hoy}T00:00:00`).lte("fecha_hora", `${hoy}T23:59:59`),
-    admin.from("citas").select("*", { count: "exact", head: true })
-      .eq("estado", "pendiente"),
-    admin.from("clientes").select("*", { count: "exact", head: true }),
-    admin.from("clientes").select("*", { count: "exact", head: true })
-      .gte("created_at", `${lunes}T00:00:00`),
-    admin.from("citas").select("precio_final")
-      .eq("estado", "completada")
-      .gte("fecha_hora", `${mesInicio}T00:00:00`),
-    admin.from("citas")
-      .select("id, fecha_hora, estado, precio_final, clientes(nombre), barberos(nombre), servicios(nombre)")
-      .order("fecha_hora", { ascending: false })
-      .limit(8),
-  ]);
-
-  const ingresosMes = (citasMes.data ?? []).reduce((s: number, c: any) => s + (c.precio_final ?? 0), 0);
-
-  return {
-    citasHoy:        citasHoy ?? 0,
-    citasPendientes: citasPendientes ?? 0,
-    totalClientes:   totalClientes ?? 0,
-    clientesSemana:  clientesSemana ?? 0,
-    ingresosMes,
-    ultimasCitas:    ultimasCitas.data ?? [],
-  };
+function startOfWeek(d: Date) {
+  const day  = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const lunes = new Date(d);
+  lunes.setDate(d.getDate() + diff);
+  lunes.setHours(0, 0, 0, 0);
+  return lunes;
 }
 
-const ESTADO_ESTILOS: Record<string, string> = {
-  pendiente:  "text-yellow-400 bg-yellow-950/30",
-  confirmada: "text-blue-400 bg-blue-950/30",
-  completada: "text-green-400 bg-green-950/30",
-  cancelada:  "text-red-400 bg-red-950/30",
-  no_show:    "text-gray-400 bg-gray-950/30",
-};
-
 export default async function AdminDashboard() {
-  const { citasHoy, citasPendientes, totalClientes, clientesSemana, ingresosMes, ultimasCitas } = await getStats();
+  const admin  = createAdminClient();
+  const ahora  = new Date();
 
-  const stats = [
-    { label: "Citas hoy",        value: citasHoy,        sub: "programadas"         },
-    { label: "Pendientes",       value: citasPendientes, sub: "por confirmar",  alert: citasPendientes > 0 },
-    { label: "Clientes totales", value: totalClientes,   sub: "registrados"         },
-    { label: "Nuevos esta semana",value: clientesSemana, sub: "desde el lunes"      },
-    { label: "Ingresos del mes", value: `${ingresosMes}€`, sub: "citas completadas" },
-  ];
+  // Rango de hoy en UTC (el servidor corre en UTC, los timestamps de Supabase son UTC)
+  const hoyStr    = ahora.toISOString().slice(0, 10);
+  const mananaStr = new Date(ahora.getTime() + 86_400_000).toISOString().slice(0, 10);
+
+  // Próximos 30 días para citas futuras
+  const en30Dias = new Date(ahora.getTime() + 30 * 86_400_000).toISOString();
+
+  const lunes  = startOfWeek(ahora);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+  domingo.setHours(23, 59, 59, 999);
+
+  const [
+    { data: citasHoy },
+    { data: clientes },
+    { data: citasSemana },
+    { data: citasProximas },
+    { data: sedes },
+  ] = await Promise.all([
+    admin
+      .from("citas")
+      .select("id, estado, precio_final, fecha_hora, clientes(nombre), servicios(nombre), barberos(nombre)")
+      .gte("fecha_hora", `${hoyStr}T00:00:00`)
+      .lte("fecha_hora", `${hoyStr}T23:59:59`)
+      .order("fecha_hora"),
+    admin.from("clientes").select("id"),
+    admin
+      .from("citas")
+      .select("id, precio_final, estado, fecha_hora")
+      .gte("fecha_hora", lunes.toISOString())
+      .lte("fecha_hora", domingo.toISOString()),
+    // Citas de mañana en adelante (próximos 30 días)
+    admin
+      .from("citas")
+      .select("id, estado, precio_final, fecha_hora, clientes(nombre), servicios(nombre), barberos(nombre)")
+      .gte("fecha_hora", `${mananaStr}T00:00:00`)
+      .lte("fecha_hora", en30Dias)
+      .neq("estado", "cancelada")
+      .order("fecha_hora")
+      .limit(50),
+    admin.from("sedes").select("nombre").limit(1),
+  ]);
+
+  const citasHoyArr      = (citasHoy      ?? []) as any[];
+  const citasSemanaArr   = (citasSemana   ?? []) as any[];
+  const citasProximasArr = (citasProximas ?? []) as any[];
+
+  // Ingresos: completadas = confirmado/cobrado; reservados = pendiente+confirmada
+  const ingresosHoy = citasHoyArr
+    .filter(c => c.estado === "completada")
+    .reduce((s: number, c) => s + (c.precio_final ?? 0), 0);
+
+  const reservadosHoy = citasHoyArr
+    .filter(c => c.estado === "confirmada" || c.estado === "pendiente")
+    .reduce((s: number, c) => s + (c.precio_final ?? 0), 0);
+
+  const pendientes = citasHoyArr
+    .filter(c => c.estado === "pendiente" || c.estado === "confirmada").length;
+
+  const cancelacionesSemana = citasSemanaArr
+    .filter(c => c.estado === "cancelada").length;
+
+  const ingresosPorDia = Array(7).fill(0);
+  citasSemanaArr
+    .filter(c => c.estado === "completada")
+    .forEach(c => {
+      const dia = new Date(c.fecha_hora).getDay();
+      const idx = dia === 0 ? 6 : dia - 1;
+      ingresosPorDia[idx] += c.precio_final ?? 0;
+    });
+
+  const ingresosSemana = ingresosPorDia.reduce((s: number, v: number) => s + v, 0);
+  const nombreNegocio  = (sedes as any)?.[0]?.nombre ?? "Monastery Barber Studio";
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="font-serif text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-[#444] text-sm mt-1">
-          {new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
-        {stats.map((s) => (
-          <div key={s.label} className={`p-5 border ${s.alert ? "border-yellow-600/40 bg-yellow-950/10" : "border-[var(--admin-border)] bg-[var(--admin-surface)]"}`}>
-            <p className={`text-2xl font-bold mb-1 ${s.alert ? "text-yellow-400" : "text-white"}`}>{s.value}</p>
-            <p className="text-[#888] text-xs font-medium">{s.label}</p>
-            <p className="text-[#444] text-[10px] mt-0.5">{s.sub}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Últimas citas */}
-      <div className="border border-[var(--admin-border)] bg-[var(--admin-surface)]">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--admin-border)]">
-          <h2 className="text-sm font-medium text-white">Últimas citas</h2>
-          <a href="/admin/citas" className="text-xs text-[#C9A84C] hover:underline">Ver todas →</a>
-        </div>
-        <div className="divide-y divide-[var(--admin-border)]">
-          {ultimasCitas.length === 0 ? (
-            <p className="px-6 py-8 text-[#444] text-sm text-center">Sin citas registradas aún.</p>
-          ) : (
-            ultimasCitas.map((cita: any) => (
-              <div key={cita.id} className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="text-white text-sm font-medium">{(cita.clientes as any)?.nombre ?? "—"}</p>
-                  <p className="text-[#555] text-xs mt-0.5">
-                    {(cita.servicios as any)?.nombre} · {(cita.barberos as any)?.nombre}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <p className="text-[#555] text-xs">
-                    {new Date(cita.fecha_hora).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
-                    {" "}
-                    {new Date(cita.fecha_hora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                  {cita.precio_final && (
-                    <p className="text-[#888] text-xs">{cita.precio_final}€</p>
-                  )}
-                  <span className={`text-[10px] px-2 py-0.5 ${ESTADO_ESTILOS[cita.estado] ?? "text-[#555]"}`}>
-                    {cita.estado}
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
+    <DashboardOverview
+      citasHoy={citasHoyArr}
+      citasProximas={citasProximasArr}
+      nombreNegocio={nombreNegocio}
+      ingresosPorDia={ingresosPorDia}
+      kpis={{
+        ingresosHoy,
+        reservadosHoy,
+        ingresosSemana,
+        totalClientes:   clientes?.length ?? 0,
+        citasPendientes: pendientes,
+        totalCitasHoy:   citasHoy?.length ?? 0,
+        cancelacionesSemana,
+        proximasCitas:   citasProximasArr.length,
+      }}
+    />
   );
 }

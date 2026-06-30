@@ -38,13 +38,9 @@ export async function middleware(request: NextRequest) {
   // Rutas de admin: requieren sesión + rol staff
   const esRutaAdmin = RUTAS_ADMIN.some((r) => pathname.startsWith(r));
   if (esRutaAdmin) {
-    if (!user) {
-      const url = new URL("/login", request.url);
-      url.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(url);
-    }
+    if (!user) return NextResponse.redirect(new URL("/admin-login", request.url));
     const esStaff = user.app_metadata?.role === "staff";
-    if (!esStaff) return NextResponse.redirect(new URL("/", request.url));
+    if (!esStaff) return NextResponse.redirect(new URL("/admin-login", request.url));
   }
 
   return supabaseResponse;
