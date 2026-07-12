@@ -125,6 +125,74 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Membresías ── */}
+      <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[#050505]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="section-label mb-3">La Orden</p>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold">
+              Membresías <span className="gold-text">exclusivas</span>
+            </h2>
+            <div className="divider-gold" />
+            <p className="text-[#555] text-sm mt-4 max-w-md mx-auto">
+              Hazte miembro y disfruta de cortes ilimitados, prioridad de agenda y acceso a beneficios únicos.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {[
+              {
+                nombre: "Silver",
+                precio: "29 €/mes",
+                color: "#aaa",
+                beneficios: ["2 cortes al mes", "Acceso al Espacio VIP", "Ofertas exclusivas"],
+              },
+              {
+                nombre: "Gold",
+                precio: "40 €/mes",
+                color: "#C9A84C",
+                beneficios: ["2 cortes al mes", "Barba incluida", "Perfilado de cejas", "Prioridad de agenda"],
+                destacado: true,
+              },
+              {
+                nombre: "Black",
+                precio: "60 €/mes",
+                color: "#888",
+                beneficios: ["2 cortes Premium", "Barba + cejas", "Nariz y oído", "Lavado incluido"],
+              },
+            ].map((p) => (
+              <div
+                key={p.nombre}
+                className={`card-premium p-7 relative flex flex-col ${p.destacado ? "border-[#C9A84C]/40" : ""}`}
+              >
+                {p.destacado && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] px-3 py-0.5 bg-[#C9A84C] text-black font-bold tracking-wider whitespace-nowrap">
+                    Más popular
+                  </div>
+                )}
+                <p className="font-serif text-3xl font-bold mb-1" style={{ color: p.color }}>{p.nombre}</p>
+                <p className="text-white text-xl font-semibold mb-5">{p.precio}</p>
+                <ul className="space-y-2 flex-1">
+                  {p.beneficios.map((b) => (
+                    <li key={b} className="text-[#555] text-sm flex items-start gap-2">
+                      <span className="mt-0.5 shrink-0" style={{ color: p.color }}>·</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10 space-y-3">
+            <p className="text-[#444] text-xs">Habla con tu barbero para activar tu membresía.</p>
+            <Link href="/la-orden" className="inline-flex btn-gold">
+              Conocer todos los beneficios →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── Ofertas & Promociones ── */}
       <Ofertas />
 
