@@ -15,7 +15,7 @@ const OFERTAS_MANANA: Oferta[] = [
     nombre: "Morning Ritual",
     descripcion: "Corte Estándar a precio reducido. Ven por la mañana y llévate un refresco o cerveza de regalo.",
     badge: "17 € → 14 €",
-    condicion: "Lun–Sáb · 09:00–14:00",
+    condicion: "Lun–Vie · 09:00–14:00",
     extra: "🍺 Bebida incluida",
   },
   {
@@ -23,7 +23,7 @@ const OFERTAS_MANANA: Oferta[] = [
     nombre: "Upgrade Mañanero",
     descripcion: "Reservas Corte Estándar y por solo 5 € más subes al Corte Medium completo (barba + cejas).",
     badge: "+5 € en vez de +8 €",
-    condicion: "Lun–Sáb · 09:00–14:00",
+    condicion: "Lun–Vie · 09:00–14:00",
     extra: "Ahorra 3 € en el upgrade",
   },
   {
@@ -31,7 +31,7 @@ const OFERTAS_MANANA: Oferta[] = [
     nombre: "Pack Madrugador",
     descripcion: "Corte Medium completo con barba y cejas a precio especial. Con snack de bienvenida incluido.",
     badge: "25 € → 20 €",
-    condicion: "Lun–Sáb · 09:00–14:00",
+    condicion: "Lun–Vie · 09:00–14:00",
     extra: "🥐 Snack incluido",
   },
 ];
@@ -42,14 +42,14 @@ const OFERTAS_VERANO: Oferta[] = [
     nombre: "Verano Monastery",
     descripcion: "El Corte Premium completo (cabello + barba + cejas + nariz + oído + lavado) a precio de temporada.",
     badge: "35 € → 28 €",
-    condicion: "Todo agosto · Sin restricción de horario",
+    condicion: "Todo agosto · Lun–Vie",
   },
   {
     id: "bono-verano",
     nombre: "Bono Verano 3+1",
     descripcion: "Paga 3 cortes de cualquier tipo y el 4.º te sale completamente gratis. Ideal para el verano.",
     badge: "3+1 gratis",
-    condicion: "Julio, agosto y septiembre",
+    condicion: "Jul–Sep · Lun–Vie",
     extra: "Válido con cualquier servicio",
   },
   {
@@ -57,7 +57,7 @@ const OFERTAS_VERANO: Oferta[] = [
     nombre: "Cerveza de Verano",
     descripcion: "Reserva antes de las 12h durante julio y agosto y disfruta de una cerveza fría cortesía de Monastery.",
     badge: "Cerveza gratis",
-    condicion: "Jul–Ago · Reservas antes de las 12:00",
+    condicion: "Jul–Ago · Lun–Vie · Antes de las 12:00",
     extra: "🍺 Cortesía de la casa",
   },
 ];
@@ -68,7 +68,7 @@ const OFERTAS_SIEMPRE: Oferta[] = [
     nombre: "Trae a un Amigo",
     descripcion: "Trae a alguien nuevo a Monastery y ambos os lleváis un 10% de descuento en vuestra próxima visita.",
     badge: "−10% para los dos",
-    condicion: "Cualquier día · Todo el año",
+    condicion: "Lun–Vie · Todo el año",
     extra: "Sin límite de usos",
   },
   {
@@ -183,7 +183,7 @@ export default function Ofertas() {
 
         {/* CTA */}
         <div className="mt-16 text-center border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-8">
-          <p className="text-[#888] text-sm mb-2">Las promociones son acumulables salvo indicación contraria.</p>
+          <p className="text-[#888] text-sm mb-2">Promociones válidas de lunes a viernes. No aplicables en sábado.</p>
           <p className="text-[#555] text-xs mb-6">Menciona la oferta al reservar o al llegar a tu cita.</p>
           <Link href="/reservas" className="inline-flex btn-gold">
             Reservar con promoción →
