@@ -55,10 +55,10 @@ const OFERTAS_VERANO: Oferta[] = [
   {
     id: "cerveza-verano",
     nombre: "Cerveza de Verano",
-    descripcion: "Reserva antes de las 12h durante julio y agosto y disfruta de una cerveza fría cortesía de Monastery.",
-    badge: "Cerveza gratis",
+    descripcion: "Reserva antes de las 12h durante julio y agosto: cerveza fría cortesía de Monastery. Menores de edad: refresco incluido.",
+    badge: "+18 🍺 / Menores 🥤",
     condicion: "Jul–Ago · Lun–Vie · Antes de las 12:00",
-    extra: "🍺 Cortesía de la casa",
+    extra: "Cortesía de la casa para todos",
   },
 ];
 

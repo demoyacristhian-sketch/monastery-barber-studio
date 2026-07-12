@@ -8,6 +8,7 @@ export type ReservaInput = {
   nombre: string;
   email: string;
   movil: string;
+  fecha_nacimiento: string;
   sede_id: string;
   barbero_id: string;
   servicio_id: string;
@@ -45,7 +46,7 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     } else {
       const { data: nuevoRaw, error } = await admin
         .from("clientes")
-        .insert({ auth_user_id: user.id, nombre: input.nombre, email: input.email, telefono: input.movil, activo: true } as any)
+        .insert({ auth_user_id: user.id, nombre: input.nombre, email: input.email, telefono: input.movil, fecha_nacimiento: input.fecha_nacimiento || null, activo: true } as any)
         .select("*")
         .single();
       const nuevo = nuevoRaw as Cliente | null;
@@ -65,7 +66,7 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     } else {
       const { data: nuevoRaw, error } = await admin
         .from("clientes")
-        .insert({ nombre: input.nombre, email: input.email, telefono: input.movil, activo: true } as any)
+        .insert({ nombre: input.nombre, email: input.email, telefono: input.movil, fecha_nacimiento: input.fecha_nacimiento || null, activo: true } as any)
         .select("*")
         .single();
       const nuevo = nuevoRaw as Cliente | null;

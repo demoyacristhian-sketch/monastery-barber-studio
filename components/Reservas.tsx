@@ -12,7 +12,7 @@ type Servicio = { id: string; nombre: string; categoria: string; duracion_minuto
 type AppData = { sedes: Sede[]; barberos: Barbero[]; servicios: Servicio[] };
 
 type Form = {
-  nombre: string; email: string; movil: string;
+  nombre: string; email: string; movil: string; fecha_nacimiento: string;
   sede_id: string; barbero_id: string; servicio_id: string;
   fecha: string; hora: string; metodo_pago: string; notas: string;
 };
@@ -67,7 +67,7 @@ export default function Reservas() {
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
 
   const [form, setForm] = useState<Form>({
-    nombre: "", email: "", movil: "",
+    nombre: "", email: "", movil: "", fecha_nacimiento: "",
     sede_id: "", barbero_id: "", servicio_id: "",
     fecha: "", hora: "", metodo_pago: "", notas: "",
   });
@@ -117,6 +117,11 @@ export default function Reservas() {
     if (!form.nombre.trim()) e.nombre = "Obligatorio";
     if (!form.email.trim() || !form.email.includes("@")) e.email = "Email inválido";
     if (!form.movil.trim()) e.movil = "Obligatorio";
+    if (!form.fecha_nacimiento) {
+      e.fecha_nacimiento = "Obligatorio";
+    } else if (new Date(form.fecha_nacimiento) >= new Date()) {
+      e.fecha_nacimiento = "La fecha debe ser anterior a hoy";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -240,6 +245,22 @@ export default function Reservas() {
               placeholder="+34 600 000 000"
             />
             {errors.movil && <p className="text-red-500 text-xs mt-1">{errors.movil}</p>}
+          </div>
+          <div>
+            <label>Tu cumpleaños *</label>
+            <input
+              type="date"
+              value={form.fecha_nacimiento}
+              onChange={(e) => set("fecha_nacimiento", e.target.value)}
+              max={new Date().toISOString().slice(0, 10)}
+            />
+            {errors.fecha_nacimiento && <p className="text-red-500 text-xs mt-1">{errors.fecha_nacimiento}</p>}
+            <div className="mt-2 px-3 py-2.5 border border-[#C9A84C]/20 bg-[#C9A84C]/5 text-xs text-[#888] leading-relaxed">
+              <span className="text-[#C9A84C] font-semibold">🎂 Regalo de cumpleaños:</span>{" "}
+              El día de tu cumpleaños disfrutas de un <strong className="text-white">50% de descuento</strong> en cualquier servicio.
+              Se valida con DNI en la barbería. Aplica solo ese día; si cae en domingo, festivo u otra eventualidad,
+              podrás aplicarlo el día anterior o posterior.
+            </div>
           </div>
           <div>
             <label>Notas adicionales (opcional)</label>
