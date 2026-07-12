@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const SPAIN_TZ = "Europe/Madrid";
 
 // Slots fijos: 09:00-14:00 y 16:00-21:00 en intervalos de 45 min
