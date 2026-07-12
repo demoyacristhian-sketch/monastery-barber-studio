@@ -29,13 +29,13 @@ export default async function MisCitasPage() {
 
   const [proximasRes, pasadasRes] = await Promise.all([
     (admin.from("citas") as any)
-      .select("id, fecha_hora, estado, precio_final, reagendar_solicitado, reagendar_motivo, servicios(nombre), barberos(nombre), sedes(nombre)")
+      .select("id, fecha_hora, estado, precio_final, notas_cliente, reagendar_solicitado, reagendar_motivo, servicios(nombre), barberos(nombre), sedes(nombre)")
       .eq("cliente_id", cliente.id)
       .gte("fecha_hora", ahora)
       .not("estado", "in", '("cancelada","completada")')
       .order("fecha_hora", { ascending: true }),
     (admin.from("citas") as any)
-      .select("id, fecha_hora, estado, precio_final, servicios(nombre), barberos(nombre), sedes(nombre)")
+      .select("id, fecha_hora, estado, precio_final, notas_cliente, servicios(nombre), barberos(nombre), sedes(nombre)")
       .eq("cliente_id", cliente.id)
       .or(`fecha_hora.lt.${ahora},estado.in.(completada,cancelada)`)
       .order("fecha_hora", { ascending: false })
@@ -46,7 +46,7 @@ export default async function MisCitasPage() {
   const pasadas  = pasadasRes.data  ?? [];
 
   return (
-    <main className="min-h-screen bg-black py-10 px-4 sm:px-6">
+    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto space-y-10">
 
         {/* Header */}

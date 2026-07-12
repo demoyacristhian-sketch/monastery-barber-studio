@@ -7,6 +7,7 @@ import { Lock } from "lucide-react";
 const links = [
   { label: "Inicio",    href: "/" },
   { label: "Servicios", href: "/servicios" },
+  { label: "Productos", href: "/productos" },
   { label: "Sedes",     href: "/sedes" },
   { label: "Equipo",    href: "/equipo" },
 ];

@@ -57,7 +57,7 @@ export default function Politica() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { icon: "🏦", label: "Transferencia\nbancaria" },
-              { icon: "💻", label: "Pasarela de\npagos online" },
+              { icon: "💻", label: "Pago online" },
               { icon: "📲", label: "Bizum" },
               { icon: "💵", label: "Metálico\nen barbería" },
             ].map((m) => (

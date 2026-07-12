@@ -14,7 +14,14 @@ type Cita = {
   barberos?: { nombre: string } | null;
   sedes?: { nombre: string } | null;
   precio_final?: number | null;
+  notas_cliente?: string | null;
 };
+
+function getOfertaTag(notas: string | null | undefined): string | null {
+  if (!notas) return null;
+  const match = notas.match(/Oferta:\s*([^|]+)/);
+  return match ? match[1].trim() : null;
+}
 
 const ESTADO_STYLES: Record<string, string> = {
   pendiente:  "text-amber-400 bg-amber-950/30 border-amber-900/40",
@@ -65,6 +72,12 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
           {/* Info */}
           <div className="min-w-0">
             <p className="text-white font-medium text-sm">{cita.servicios?.nombre ?? "Servicio"}</p>
+            {getOfertaTag(cita.notas_cliente) && (
+              <p className="text-[#C9A84C] text-[11px] mt-0.5 flex items-center gap-1">
+                <span>✦</span>
+                <span>{getOfertaTag(cita.notas_cliente)}</span>
+              </p>
+            )}
             <p className="text-[#555] text-xs mt-0.5">
               {[cita.barberos?.nombre, cita.sedes?.nombre].filter(Boolean).join(" · ")}
             </p>

@@ -38,7 +38,7 @@ export default function AdminNav() {
   async function cerrarSesion() {
     const sb = createClient();
     await sb.auth.signOut();
-    router.push("/login");
+    router.push("/admin-login");
   }
 
   function isActive(href: string) {

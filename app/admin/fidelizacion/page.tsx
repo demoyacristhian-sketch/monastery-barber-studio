@@ -1,28 +1,13 @@
 import { createAdminClient } from "@/lib/supabase-admin";
-import { Crown, Star, Gift, TrendingUp, Users, ChevronRight, Settings } from "lucide-react";
+import { Star, Gift, TrendingUp, Crown, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import BackButton from "@/components/admin/BackButton";
+import ConfigurarProgramaBtn from "@/components/admin/ConfigurarProgramaBtn";
+import PlanesMembresiasPanel from "@/components/admin/PlanesMembresiasPanel";
 
 export const metadata: Metadata = { title: "Fidelización | Admin Monastery" };
 export const dynamic = "force-dynamic";
 
-const PLANES = [
-  {
-    id: "silver", nombre: "Silver", precio: 29, cortes: 2,
-    iconColor: "text-zinc-500", bgCard: "bg-white", borderCard: "border-zinc-200",
-    priceColor: "text-zinc-700",
-  },
-  {
-    id: "gold", nombre: "Gold", precio: 49, cortes: 4,
-    iconColor: "text-amber-500", bgCard: "bg-amber-50", borderCard: "border-amber-200",
-    priceColor: "text-amber-600",
-  },
-  {
-    id: "black", nombre: "Black", precio: 79, cortes: 8,
-    iconColor: "text-[#C9A84C]", bgCard: "bg-white", borderCard: "border-[#C9A84C]/30",
-    priceColor: "text-[#C9A84C]",
-  },
-] as const;
 
 function euros(n: number) {
   return n.toLocaleString("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
@@ -53,7 +38,7 @@ export default async function FidelizacionPage() {
   const cortesCanjeados = lista.filter(c => c.vip === true).length;
 
   // MRR
-  const mrr = miembrosSilver * 29 + miembrosGold * 49 + miembrosBlack * 79;
+  const mrr = miembrosSilver * 29 + miembrosGold * 40 + miembrosBlack * 60;
 
   // Top 5 para el panel de tarjetas
   const topClientes = lista.slice(0, 5);
@@ -68,9 +53,7 @@ export default async function FidelizacionPage() {
           <h1 className="text-2xl font-bold text-zinc-900">Fidelización</h1>
           <p className="text-sm text-zinc-500 mt-0.5">Puntos, membresías y recompensas para tus clientes</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#C9A84C] hover:bg-[#B8964A] transition-colors flex-shrink-0">
-          <Settings className="w-4 h-4" /> Configurar programa
-        </button>
+        <ConfigurarProgramaBtn />
       </div>
 
       {/* ── KPI Cards ── */}
@@ -108,34 +91,7 @@ export default async function FidelizacionPage() {
       {/* ── Cuerpo en dos columnas ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Planes de membresía */}
-        <div className="bg-white border border-zinc-200 rounded-2xl p-6 space-y-3">
-          <h2 className="font-semibold text-zinc-900 text-base">Planes de membresía</h2>
-          {PLANES.map(p => {
-            const miembros = p.id === "silver" ? miembrosSilver
-              : p.id === "gold" ? miembrosGold
-              : miembrosBlack;
-            return (
-              <div key={p.id}
-                className={`rounded-xl border ${p.borderCard} ${p.bgCard} px-4 py-3.5 flex items-center justify-between gap-3`}>
-                <div className="flex items-center gap-3">
-                  <Crown className={`w-5 h-5 ${p.iconColor}`} />
-                  <div>
-                    <p className={`font-semibold text-sm ${p.iconColor}`}>{p.nombre}</p>
-                    <p className="text-xs text-zinc-400">{p.cortes} cortes incluidos/mes</p>
-                    <p className="text-xs text-zinc-400">
-                      <Users className="w-3 h-3 inline-block mr-1 mb-0.5" />
-                      {miembros} miembro{miembros !== 1 ? "s" : ""} activo{miembros !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
-                <p className={`text-sm font-bold whitespace-nowrap ${p.priceColor}`}>
-                  {p.precio} €/mes
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <PlanesMembresiasPanel stats={{ silver: miembrosSilver, gold: miembrosGold, black: miembrosBlack }} />
 
         {/* Tarjetas de sellos */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-6">

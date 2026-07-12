@@ -49,7 +49,7 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center">
+      <main className="min-h-screen bg-black flex items-center justify-center pb-20 sm:pb-0">
         <p className="text-[#444] text-sm">Cargando...</p>
       </main>
     );
@@ -57,7 +57,7 @@ export default function PerfilPage() {
 
   if (!cliente) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center">
+      <main className="min-h-screen bg-black flex items-center justify-center pb-20 sm:pb-0">
         <div className="text-center">
           <p className="text-[#444] text-sm mb-4">Perfil no encontrado.</p>
           <Link href="/reservas" className="btn-gold inline-flex text-sm">Reservar primera cita →</Link>
@@ -70,7 +70,7 @@ export default function PerfilPage() {
   const nivelColor = nivel === "Black" ? "#888" : nivel === "Gold" ? "#C9A84C" : nivel === "Silver" ? "#aaa" : "#555";
 
   return (
-    <main className="min-h-screen bg-black py-10 px-4 sm:px-6">
+    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-8">
 
         {/* Header */}

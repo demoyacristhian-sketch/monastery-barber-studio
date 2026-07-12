@@ -3,10 +3,10 @@
 import { useState, useTransition, useEffect } from "react";
 import {
   Pencil, Check, X, Plus, Loader2, ToggleLeft, ToggleRight,
-  Globe, Bell, CreditCard, Palette, Scissors, Clock,
+  Globe, Bell, CreditCard, Palette, Scissors, Clock, Trash2,
 } from "lucide-react";
 import {
-  actualizarServicio, crearServicio,
+  actualizarServicio, crearServicio, eliminarServicio,
   actualizarBarbero, crearBarbero, actualizarSede,
 } from "@/app/actions/admin";
 import BackButton from "./BackButton";
@@ -76,21 +76,20 @@ function ToggleActivo({ activo, onToggle }: { activo: boolean; onToggle: () => v
   );
 }
 
-// ── Información del negocio ────────────────────────────────────────────────
-function SeccionInfoNegocio({ sede }: { sede: Sede | null }) {
+// ── Formulario de una sede ─────────────────────────────────────────────────
+function FormSede({ sede }: { sede: Sede }) {
   const [form, setForm] = useState({
-    nombre:    sede?.nombre    ?? "",
-    telefono:  sede?.telefono  ?? "",
-    email:     sede?.email     ?? "",
-    direccion: sede?.direccion ?? "",
-    instagram: sede?.instagram ?? "",
-    whatsapp:  sede?.whatsapp  ?? "",
+    nombre:    sede.nombre    ?? "",
+    telefono:  sede.telefono  ?? "",
+    email:     sede.email     ?? "",
+    direccion: sede.direccion ?? "",
+    instagram: sede.instagram ?? "",
+    whatsapp:  sede.whatsapp  ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [ok, setOk]         = useState(false);
 
   async function guardar() {
-    if (!sede) return;
     setSaving(true);
     await actualizarSede(sede.id, {
       nombre:    form.nombre,
@@ -108,23 +107,19 @@ function SeccionInfoNegocio({ sede }: { sede: Sede | null }) {
   const f = (label: string, key: keyof typeof form, placeholder = "") => (
     <div>
       <label className="block text-xs text-zinc-400 mb-1.5">{label}</label>
-      <input value={form[key]} placeholder={placeholder}
+      <input value={form[key] ?? ""} placeholder={placeholder}
         onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
         className="w-full px-3 py-2.5 text-sm border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/30 focus:border-[#C9A84C] text-zinc-900 bg-white" />
     </div>
   );
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-      <div className="flex items-center gap-2 mb-5">
-        <Scissors className="w-4 h-4 text-[#C9A84C]" />
-        <h2 className="font-semibold text-zinc-900">Información del negocio</h2>
-      </div>
+    <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         {f("Nombre del negocio", "nombre", "Monastery Barber Studio")}
         {f("Teléfono", "telefono", "+34 600 000 000")}
         {f("Email", "email", "info@monastery.com")}
-        {f("Dirección", "direccion", "Calle Mayor 1, Madrid")}
+        {f("Dirección", "direccion", "Calle Mayor 1")}
         {f("Instagram", "instagram", "@monasterybarber")}
         {f("Número de WhatsApp", "whatsapp", "34600000000")}
       </div>
@@ -133,6 +128,43 @@ function SeccionInfoNegocio({ sede }: { sede: Sede | null }) {
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : ok ? <Check className="w-4 h-4" /> : null}
         {ok ? "¡Guardado!" : "Guardar cambios"}
       </button>
+    </>
+  );
+}
+
+// ── Información del negocio (con pestañas por sede) ────────────────────────
+function SeccionInfoNegocio({ sedes }: { sedes: Sede[] }) {
+  const [tabIdx, setTabIdx] = useState(0);
+  const sede = sedes[tabIdx] ?? null;
+
+  return (
+    <div className="bg-white border border-zinc-200 rounded-2xl p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Scissors className="w-4 h-4 text-[#C9A84C]" />
+        <h2 className="font-semibold text-zinc-900">Información del negocio</h2>
+      </div>
+
+      {sedes.length > 1 && (
+        <div className="flex gap-0 mb-5 border-b border-zinc-100">
+          {sedes.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setTabIdx(i)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                tabIdx === i
+                  ? "border-[#C9A84C] text-[#C9A84C]"
+                  : "border-transparent text-zinc-400 hover:text-zinc-700"
+              }`}
+            >
+              {s.nombre}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {sede ? <FormSede key={sede.id} sede={sede} /> : (
+        <p className="text-zinc-400 text-sm">Sin sedes configuradas</p>
+      )}
     </div>
   );
 }
@@ -423,7 +455,7 @@ function ModalEditServicio({ servicio, onSave, onClose }: {
 
 // ── Sección Servicios ──────────────────────────────────────────────────────
 function SeccionServicios({ servicios }: { servicios: Servicio[] }) {
-  const [items, setItems]     = useState(servicios);
+  const [items, setItems]     = useState(servicios.filter(s => s.activo));
   const [nuevo, setNuevo]     = useState(false);
   const [editando, setEditar] = useState<Servicio | null>(null);
   const [form, setForm]       = useState({ nombre: "", precio: "", duracion_minutos: "", categoria: "" });
@@ -439,6 +471,12 @@ function SeccionServicios({ servicios }: { servicios: Servicio[] }) {
 
   function applyEdit(id: string, data: Partial<Servicio>) {
     setItems(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
+  }
+
+  async function handleEliminar(id: string) {
+    if (!confirm("¿Eliminar este servicio? Esta acción no se puede deshacer.")) return;
+    const res = await eliminarServicio(id);
+    if (res.ok) setItems(prev => prev.filter(s => s.id !== id));
   }
 
   async function crear() {
@@ -542,10 +580,16 @@ function SeccionServicios({ servicios }: { servicios: Servicio[] }) {
                           onToggle={() => { update(s.id, "activo", !s.activo); return Promise.resolve(); }} />
                       </td>
                       <td className="px-4 py-3.5 text-right">
-                        <button onClick={() => setEditar(s)}
-                          className="p-1.5 rounded-lg text-zinc-300 hover:text-[#C9A84C] hover:bg-[#C9A84C]/5 transition-all opacity-0 group-hover:opacity-100">
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setEditar(s)}
+                            className="p-1.5 rounded-lg text-zinc-300 hover:text-[#C9A84C] hover:bg-[#C9A84C]/5 transition-all opacity-0 group-hover:opacity-100">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleEliminar(s.id)}
+                            className="p-1.5 rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -559,12 +603,213 @@ function SeccionServicios({ servicios }: { servicios: Servicio[] }) {
   );
 }
 
+// ── Sección Dominio & Mantenimiento ───────────────────────────────────────
+type InfoWeb = {
+  dominio: string; fechaInicio: string; fechaRenovacion: string;
+  mantenimiento: string; proveedor: string; aporteMensual: string;
+};
+
+const INFO_WEB_LS = "mbs_info_web";
+const INFO_WEB_DEFAULT: InfoWeb = {
+  dominio: "monasterybarbers.es",
+  fechaInicio: "12-07-2026",
+  fechaRenovacion: "12-07-2028",
+  mantenimiento: "Mantenimiento Web y Marketing",
+  proveedor: "Nown",
+  aporteMensual: "69",
+};
+
+function SeccionDominio() {
+  const [info, setInfo] = useState<InfoWeb>(INFO_WEB_DEFAULT);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(INFO_WEB_LS);
+      if (saved) setInfo(JSON.parse(saved));
+    } catch {}
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(INFO_WEB_LS, JSON.stringify(info));
+  }, [info, hydrated]);
+
+  function campo(key: keyof InfoWeb, label: string, suffix = "") {
+    return (
+      <div className="flex items-center justify-between gap-4 py-3 border-b border-zinc-50 last:border-0">
+        <span className="text-xs text-zinc-400">{label}</span>
+        <Campo
+          value={info[key]}
+          suffix={suffix}
+          onSave={async v => setInfo(p => ({ ...p, [key]: v }))}
+          className="text-sm text-zinc-900 font-medium"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <section className="bg-white border border-zinc-200 rounded-2xl p-6 space-y-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Globe className="w-4 h-4 text-[#C9A84C]" />
+        <h2 className="font-bold text-zinc-900">Dominio & Mantenimiento Web</h2>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-3">Dominio web</p>
+          <div className="bg-zinc-50 rounded-xl px-4 py-2">
+            {campo("dominio", "Dominio")}
+            {campo("fechaInicio", "Fecha de inicio")}
+            {campo("fechaRenovacion", "Fecha de renovación")}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest mb-3">Mantenimiento</p>
+          <div className="bg-zinc-50 rounded-xl px-4 py-2">
+            {campo("mantenimiento", "Servicio")}
+            {campo("proveedor", "Implementado por")}
+            {campo("aporteMensual", "Aporte mensual", " €/mes")}
+          </div>
+          <p className="text-xs text-zinc-400 mt-2 pl-1">
+            Desarrollado por{" "}
+            <a href="https://www.nownlab.es/" target="_blank" rel="noopener noreferrer"
+              className="text-[#C9A84C] hover:underline font-medium">
+              Nown
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Sección Usuarios Admin ─────────────────────────────────────────────────
+type AdminUser = { nombre: string; email: string; usuario: string };
+
+const ADMIN_USERS_LS = "mbs_admin_users";
+const ADMIN_USERS_DEFAULT: AdminUser[] = [
+  { nombre: "Jonathan Suarez",   email: "jonathan.monastery@monasterybarbers.es",  usuario: "jonathan.monastery" },
+  { nombre: "Daniel Quiñones",   email: "daniel.monastery@monasterybarbers.es",    usuario: "daniel.monastery" },
+  { nombre: "Cristhian De Moya", email: "cristhian.monastery@monasterybarbers.es", usuario: "cristhian.monastery" },
+];
+
+function SeccionUsuarios() {
+  const [users, setUsers]   = useState<AdminUser[]>(ADMIN_USERS_DEFAULT);
+  const [hydrated, setHydrated] = useState(false);
+  const [nuevo, setNuevo]   = useState<{ nombre: string; email: string; usuario: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(ADMIN_USERS_LS);
+      if (saved) setUsers(JSON.parse(saved));
+    } catch {}
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(ADMIN_USERS_LS, JSON.stringify(users));
+  }, [users, hydrated]);
+
+  function añadir() {
+    if (!nuevo?.nombre.trim() || !nuevo.email.trim()) return;
+    setUsers(p => [...p, { ...nuevo }]);
+    setNuevo(null);
+  }
+
+  function eliminar(email: string) {
+    setUsers(p => p.filter(u => u.email !== email));
+  }
+
+  return (
+    <section className="bg-white border border-zinc-200 rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <Bell className="w-4 h-4 text-[#C9A84C]" />
+          <h2 className="font-bold text-zinc-900">Usuarios y contraseñas</h2>
+        </div>
+        <button
+          onClick={() => setNuevo({ nombre: "", email: "", usuario: "" })}
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#C9A84C] text-white rounded-lg hover:bg-[#B8964A] transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" /> Nuevo usuario
+        </button>
+      </div>
+
+      <p className="text-xs text-zinc-400 mb-4 bg-zinc-50 px-3 py-2 rounded-lg">
+        Los usuarios con acceso al panel de administración deben tener rol <strong>staff</strong> asignado en Supabase Auth. Para activar nuevos usuarios en producción, contacta a tu administrador técnico o crea el usuario directamente en Supabase con <code className="bg-zinc-100 px-1 rounded">app_metadata.role = &quot;staff&quot;</code>.
+      </p>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-zinc-50 border-b border-zinc-100">
+              <th className="px-4 py-2.5 text-left text-xs text-zinc-400 font-medium uppercase tracking-wide">Nombre</th>
+              <th className="px-4 py-2.5 text-left text-xs text-zinc-400 font-medium uppercase tracking-wide">Usuario</th>
+              <th className="px-4 py-2.5 text-left text-xs text-zinc-400 font-medium uppercase tracking-wide">Email de acceso</th>
+              <th className="px-4 py-2.5 w-10" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-50">
+            {users.map(u => (
+              <tr key={u.email} className="hover:bg-zinc-50/50 group">
+                <td className="px-4 py-3 font-medium text-zinc-800">{u.nombre}</td>
+                <td className="px-4 py-3 text-zinc-500 font-mono text-xs">{u.usuario}</td>
+                <td className="px-4 py-3 text-zinc-500 text-xs">{u.email}</td>
+                <td className="px-4 py-3 text-right">
+                  <button onClick={() => eliminar(u.email)}
+                    className="text-zinc-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {nuevo !== null && (
+        <div className="mt-4 border border-zinc-200 rounded-xl p-4 bg-zinc-50 space-y-3">
+          <p className="text-xs font-semibold text-zinc-600 uppercase tracking-wide">Nuevo usuario administrador</p>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[10px] text-zinc-400 mb-1">Nombre completo</label>
+              <input value={nuevo.nombre} onChange={e => setNuevo(p => p ? { ...p, nombre: e.target.value } : p)}
+                className="w-full px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C]" />
+            </div>
+            <div>
+              <label className="block text-[10px] text-zinc-400 mb-1">Usuario (login)</label>
+              <input value={nuevo.usuario} onChange={e => setNuevo(p => p ? { ...p, usuario: e.target.value } : p)}
+                className="w-full px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C]" />
+            </div>
+            <div>
+              <label className="block text-[10px] text-zinc-400 mb-1">Email de acceso</label>
+              <input type="email" value={nuevo.email} onChange={e => setNuevo(p => p ? { ...p, email: e.target.value } : p)}
+                className="w-full px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C]" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={añadir} className="px-3 py-1.5 bg-[#C9A84C] text-white text-xs rounded-lg hover:bg-[#B8964A] transition-colors">
+              Añadir
+            </button>
+            <button onClick={() => setNuevo(null)} className="px-3 py-1.5 border border-zinc-200 text-zinc-500 text-xs rounded-lg hover:bg-zinc-100 transition-colors">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ── Export principal ───────────────────────────────────────────────────────
 export default function ConfigAdmin({ sedes, barberos, servicios }: {
   sedes: Sede[]; barberos: Barbero[]; servicios: Servicio[];
 }) {
-  const sedePrincipal = sedes[0] ?? null;
-
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -573,7 +818,7 @@ export default function ConfigAdmin({ sedes, barberos, servicios }: {
         <p className="text-sm text-zinc-500 mt-0.5">Gestiona todos los ajustes de tu negocio</p>
       </div>
 
-      <SeccionInfoNegocio sede={sedePrincipal} />
+      <SeccionInfoNegocio sedes={sedes} />
       <SeccionHorarios />
       <GridTarjetas />
 
@@ -581,6 +826,8 @@ export default function ConfigAdmin({ sedes, barberos, servicios }: {
         <SeccionServicios servicios={servicios} />
         <SeccionBarberos barberos={barberos} sedes={sedes} />
         <SeccionSedes sedes={sedes} />
+        <SeccionDominio />
+        <SeccionUsuarios />
       </div>
     </div>
   );

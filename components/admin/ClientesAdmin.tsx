@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect, useTransition } from "react";
 import {
   Search, Users, TrendingUp, AlertTriangle, Star,
-  Plus, MoreHorizontal, X, Check, Loader2, Scissors, Crown,
+  Plus, MoreHorizontal, X, Check, Loader2, Scissors, Crown, Trash2,
 } from "lucide-react";
-import { actualizarCliente, crearCliente, toggleActivoCliente, actualizarSellosCliente, canjearCorteGratis, toggleVipCliente } from "@/app/actions/admin";
+import { actualizarCliente, crearCliente, toggleActivoCliente, actualizarSellosCliente, canjearCorteGratis, toggleVipCliente, eliminarCliente } from "@/app/actions/admin";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import BackButton from "./BackButton";
@@ -291,7 +291,7 @@ function PanelEdicion({ cliente, onClose, onSave }: {
 }
 
 // ── Menú "..." con posición fixed (escapa de overflow-hidden) ─────────────
-function MenuAcciones({ clienteId, onEditar }: { clienteId: string; onEditar: () => void }) {
+function MenuAcciones({ clienteId, onEditar, onEliminar }: { clienteId: string; onEditar: () => void; onEliminar: () => void }) {
   const [open, setOpen]   = useState(false);
   const [pos,  setPos]    = useState({ top: 0, right: 0 });
   const btnRef  = useRef<HTMLButtonElement>(null);
@@ -344,6 +344,17 @@ function MenuAcciones({ clienteId, onEditar }: { clienteId: string; onEditar: ()
           >
             Editar cliente
           </button>
+          <div className="my-1 border-t border-zinc-100" />
+          <button
+            onClick={() => {
+              setOpen(false);
+              if (confirm("¿Eliminar este cliente? Esta acción no se puede deshacer.")) onEliminar();
+            }}
+            className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Eliminar cliente
+          </button>
         </div>
       )}
     </>
@@ -360,6 +371,11 @@ export default function ClientesAdmin({ clientes }: { clientes: Cliente[] }) {
   const router = useRouter();
 
   const MS_30 = 30 * 86_400_000;
+
+  async function handleEliminar(id: string) {
+    const res = await eliminarCliente(id);
+    if (res.ok) setItems(prev => prev.filter(c => c.id !== id));
+  }
 
   const enriquecidos = items.map(c => {
     const completadas = (c.citas ?? []).filter(ci => ci.estado === "completada");
@@ -606,7 +622,7 @@ export default function ClientesAdmin({ clientes }: { clientes: Cliente[] }) {
 
                   {/* Menú */}
                   <td className="px-4 py-3.5">
-                    <MenuAcciones clienteId={c.id} onEditar={() => setEditando(c.id)} />
+                    <MenuAcciones clienteId={c.id} onEditar={() => setEditando(c.id)} onEliminar={() => handleEliminar(c.id)} />
                   </td>
 
                 </tr>

@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function EspacioVipPage() {
   return (
-    <main className="pt-14 sm:pt-16">
+    <main className="pb-20 sm:pb-0">
       {/* Premium header */}
-      <div className="relative py-28 px-6 text-center overflow-hidden bg-black border-b border-[#111]">
+      <div className="relative py-20 sm:py-28 px-6 text-center overflow-hidden bg-black border-b border-[#111]">
         {/* Atmospheric glow */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -32,7 +32,7 @@ export default function EspacioVipPage() {
             <div className="h-px w-10 bg-[#C9A84C]/40" />
           </div>
 
-          <h1 className="font-serif text-6xl sm:text-7xl md:text-8xl font-black tracking-tight mb-3">
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-8xl font-black tracking-tight mb-3">
             Espacio <span className="gold-text">VIP</span>
           </h1>
 

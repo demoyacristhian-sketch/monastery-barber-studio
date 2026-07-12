@@ -4,13 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
-import { Lock, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginForm() {
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState<string | null>(null);
+  const [email,       setEmail]       = useState("");
+  const [password,    setPassword]    = useState("");
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState<string | null>(null);
+  const [showPass,    setShowPass]    = useState(false);
   const router  = useRouter();
   const supabase = createClient();
 
@@ -70,12 +71,11 @@ export default function AdminLoginForm() {
               </label>
               <input
                 type="email"
-                placeholder="admin@monastery.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoFocus
-                className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition-all"
+                className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl bg-white text-zinc-900 caret-zinc-900 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition-all"
                 style={{ WebkitBoxShadow: "0 0 0px 1000px #ffffff inset", WebkitTextFillColor: "#18181b" }}
               />
             </div>
@@ -84,15 +84,25 @@ export default function AdminLoginForm() {
               <label className="block text-xs font-medium text-zinc-500 mb-1.5 uppercase tracking-wide">
                 Contraseña
               </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                className="w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition-all"
-                style={{ WebkitBoxShadow: "0 0 0px 1000px #ffffff inset", WebkitTextFillColor: "#18181b" }}
-              />
+              <div className="relative">
+                <input
+                  type={showPass ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3.5 py-2.5 pr-11 text-sm border border-zinc-200 rounded-xl bg-white text-zinc-900 caret-zinc-900 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition-all"
+                  style={{ WebkitBoxShadow: "0 0 0px 1000px #ffffff inset", WebkitTextFillColor: "#18181b" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(p => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+                  tabIndex={-1}
+                  aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -118,11 +128,7 @@ export default function AdminLoginForm() {
 
         {/* Aviso */}
         <p className="text-center text-[11px] text-zinc-400 mt-5 leading-relaxed">
-          Este acceso es exclusivo para administradores de Monastery Barber Studio.<br />
-          Si eres cliente, accede al{" "}
-          <a href="/espacio-vip" className="text-zinc-500 hover:text-zinc-700 underline underline-offset-2">
-            Espacio VIP
-          </a>.
+          Acceso exclusivo para administradores de Monastery Barber Studio.
         </p>
       </div>
     </div>

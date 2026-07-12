@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import { createReserva } from "@/app/actions/reservas";
 
 // ── Tipos ─────────────────────────────────────────────────────
-type Sede     = { id: string; nombre: string };
+type Sede     = { id: string; nombre: string; direccion?: string; orden?: number };
 type Barbero  = { id: string; nombre: string; sede_id: string };
 type Servicio = { id: string; nombre: string; categoria: string; duracion_minutos: number; precio: number };
 
@@ -32,7 +33,7 @@ const PAGOS = [
   { id: "metalico",     label: "Efectivo en barbería",               aviso: false },
   { id: "bizum",        label: "Bizum (50% anticipo)",               aviso: true  },
   { id: "transferencia",label: "Transferencia bancaria (50% anticipo)",aviso: true },
-  { id: "online",       label: "Pago online por pasarela",           aviso: true  },
+  { id: "online",       label: "Pago online",                        aviso: true  },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -56,6 +57,15 @@ function diasDisponibles(dias = 21): { iso: string; label: string; dia: number }
   return result;
 }
 
+const NOMBRES_MESES: Record<number, string> = {
+  1: "enero", 2: "febrero", 3: "marzo", 4: "abril", 5: "mayo", 6: "junio",
+  7: "julio", 8: "agosto", 9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre",
+};
+
+function getNombreMeses(mesesStr: string) {
+  return mesesStr.split(",").map(m => NOMBRES_MESES[parseInt(m, 10)] ?? m).join(", ");
+}
+
 // ── Componente principal ────────────────────────────────────────
 export default function Reservas() {
   const [step, setStep] = useState<Step>("datos");
@@ -66,6 +76,25 @@ export default function Reservas() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [citaId, setCitaId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof Form | "acepta_privacidad", string>>>({});
+  const [ofertaAplicada, setOfertaAplicada] = useState<string | null>(null);
+  const [precioOferta,   setPrecioOferta]   = useState<number | null>(null);
+  const [extraOferta,    setExtraOferta]    = useState<string | null>(null);
+  const [contadorOferta, setContadorOferta] = useState<{ ocupadas: number; disponibles: number; agotado: boolean } | null>(null);
+  const [loadingContador, setLoadingContador] = useState(false);
+  // Servicio exclusivo/virtual (no existe en la BD de servicios generales)
+  const [servicioPreselect, setServicioPreselect] = useState<{ nombre: string; precio: number } | null>(null);
+  const [cargandoPerfil,   setCargandoPerfil]   = useState(true);
+  const [clienteReconocido, setClienteReconocido] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const servicioParam = searchParams.get("servicio");
+  const ofertaParam   = searchParams.get("oferta");
+  const precioParam   = searchParams.get("precio");
+  const extraParam    = searchParams.get("extra");
+  const franjaParam   = searchParams.get("franja");   // "manana" = solo 09:00–14:00
+  const mesesParam    = searchParams.get("meses");    // "8" o "7,8,9"
+  const diasParam     = searchParams.get("dias");     // "1" = solo lunes
+  const servicioInitRef = useRef(false);
 
   const [form, setForm] = useState<Form>({
     nombre: "", email: "", movil: "", fecha_nacimiento: "",
@@ -74,17 +103,29 @@ export default function Reservas() {
     acepta_privacidad: false,
   });
 
-  // Pre-fill con datos del usuario autenticado
+  // Cargar perfil del cliente autenticado — pre-rellenar datos y saltar paso 1 si está completo
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      setForm((f) => ({
-        ...f,
-        email: user.email ?? f.email,
-        nombre: (user.user_metadata?.nombre as string) ?? f.nombre,
-      }));
-    });
+    fetch("/api/reservas/perfil")
+      .then(r => r.json())
+      .then(perfil => {
+        if (!perfil) return;
+        setForm(f => ({
+          ...f,
+          nombre:          perfil.nombre          ?? f.nombre,
+          email:           perfil.email           ?? f.email,
+          movil:           perfil.telefono        ?? f.movil,
+          fecha_nacimiento: perfil.fecha_nacimiento ?? f.fecha_nacimiento,
+          // Si ya existe registro completo, marcar privacidad aceptada (ya la aceptaron al registrarse)
+          acepta_privacidad: !!(perfil.nombre && perfil.telefono),
+        }));
+        if (perfil.nombre) setClienteReconocido(perfil.nombre);
+        // Saltar paso de datos si tiene toda la info requerida
+        if (perfil.nombre && perfil.telefono && perfil.fecha_nacimiento) {
+          setStep("servicio");
+        }
+      })
+      .catch(() => {})
+      .finally(() => setCargandoPerfil(false));
   }, []);
 
   // Cargar sedes, barberos y servicios
@@ -93,6 +134,44 @@ export default function Reservas() {
       .then((r) => r.json())
       .then(setAppData);
   }, []);
+
+  // Capturar oferta, precio y extra desde URL
+  useEffect(() => {
+    if (ofertaParam) setOfertaAplicada(ofertaParam);
+  }, [ofertaParam]);
+
+  useEffect(() => {
+    if (precioParam) setPrecioOferta(parseFloat(precioParam));
+  }, [precioParam]);
+
+  useEffect(() => {
+    if (extraParam) setExtraOferta(extraParam);
+  }, [extraParam]);
+
+  // Scroll al inicio de la sección al cambiar de paso
+  useEffect(() => {
+    if (step === "exito") return;
+    const el = document.getElementById("reservas");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step]);
+
+  // Pre-seleccionar servicio desde URL cuando cargan los datos
+  useEffect(() => {
+    if (!appData || !servicioParam || servicioInitRef.current) return;
+    servicioInitRef.current = true;
+    const match = appData.servicios.find((s) =>
+      s.nombre.toLowerCase() === servicioParam.toLowerCase() ||
+      s.nombre.toLowerCase().includes(servicioParam.toLowerCase()) ||
+      servicioParam.toLowerCase().includes(s.nombre.toLowerCase())
+    );
+    if (match) {
+      setForm((f) => ({ ...f, servicio_id: match.id }));
+    } else if (ofertaParam || servicioParam) {
+      // Servicio exclusivo/de oferta que no existe en el catálogo general
+      const precio = precioParam ? parseFloat(precioParam) : 0;
+      setServicioPreselect({ nombre: servicioParam, precio });
+    }
+  }, [appData, servicioParam, ofertaParam, precioParam]);
 
   // Cargar slots cuando cambia barbero o fecha
   const cargarSlots = useCallback(async (barberoId: string, fecha: string) => {
@@ -105,6 +184,24 @@ export default function Reservas() {
       setSlots(s ?? []);
     } finally {
       setLoadingSlots(false);
+    }
+  }, []);
+
+  // Cargar contador de plazas para ofertas con límite (ej: Verano Refrescante)
+  const cargarContador = useCallback(async (oferta: string, fecha: string) => {
+    if (!oferta || !fecha) return;
+    setLoadingContador(true);
+    setContadorOferta(null);
+    try {
+      const res = await fetch(
+        `/api/reservas/oferta-contador?fecha=${fecha}&oferta=${encodeURIComponent(oferta)}`
+      );
+      const data = await res.json();
+      setContadorOferta(data);
+    } catch {
+      setContadorOferta(null);
+    } finally {
+      setLoadingContador(false);
     }
   }, []);
 
@@ -131,9 +228,10 @@ export default function Reservas() {
 
   function validarServicio(): boolean {
     const e: typeof errors = {};
-    if (!form.sede_id)     e.sede_id     = "Selecciona una sede";
-    if (!form.barbero_id)  e.barbero_id  = "Selecciona un barbero";
-    if (!form.servicio_id) e.servicio_id = "Selecciona un servicio";
+    if (!form.sede_id)    e.sede_id    = "Selecciona una sede";
+    if (!form.barbero_id) e.barbero_id = "Selecciona un barbero";
+    // Si hay servicio exclusivo/virtual preseleccionado, no exigir servicio_id del catálogo
+    if (!form.servicio_id && !servicioPreselect) e.servicio_id = "Selecciona un servicio";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -157,7 +255,19 @@ export default function Reservas() {
     if (!validarConfirmar()) return;
     setSubmitting(true);
     setSubmitError(null);
-    const result = await createReserva(form);
+    const ofertaStr = ofertaAplicada
+      ? [ofertaAplicada, precioOferta != null ? `${precioOferta} €` : null, extraOferta ?? null]
+          .filter(Boolean).join(" · ")
+      : null;
+    const notasConOferta = ofertaStr
+      ? (form.notas ? `Oferta: ${ofertaStr} | ${form.notas}` : `Oferta: ${ofertaStr}`)
+      : form.notas;
+    const result = await createReserva({
+      ...form,
+      notas: notasConOferta,
+      ...(precioOferta != null && { precio_oferta_override: precioOferta }),
+      ...(ofertaAplicada && { oferta_nombre: ofertaAplicada }),
+    });
     setSubmitting(false);
     if (result.ok) {
       setCitaId(result.cita_id);
@@ -183,6 +293,26 @@ export default function Reservas() {
   const pagoSel    = PAGOS.find((p) => p.id === form.metodo_pago);
   const dias       = diasDisponibles();
 
+  // Restricciones de oferta: filtrar por mes y día de semana
+  const mesesValidos  = mesesParam  ? mesesParam.split(",").map(Number) : null;
+  const diasSemanaVal = diasParam   ? diasParam.split(",").map(Number)  : null;
+  const diasFiltrados = (mesesValidos || diasSemanaVal)
+    ? dias.filter(d => {
+        const mes = new Date(d.iso + "T12:00:00").getMonth() + 1;
+        if (mesesValidos && !mesesValidos.includes(mes)) return false;
+        if (diasSemanaVal && !diasSemanaVal.includes(d.dia)) return false;
+        return true;
+      })
+    : dias;
+
+  // Restricción de franja horaria: filtrar slots de mañana
+  const slotsMostrar = franjaParam === "manana"
+    ? slots.filter(s => {
+        const h = parseInt(s.split(":")[0], 10);
+        return h >= 9 && h < 14;
+      })
+    : slots;
+
   // ── Barra de progreso ──────────────────────────────────────────
   const pasos: Step[] = ["datos", "servicio", "fecha", "confirmar"];
   const pasoIdx = pasos.indexOf(step);
@@ -192,6 +322,24 @@ export default function Reservas() {
   function Header({ label, title }: { label: string; title: React.ReactNode }) {
     return (
       <div className="text-center mb-8 sm:mb-12">
+        {clienteReconocido && (
+          <div className="mb-3 flex justify-center">
+            <a
+              href="/espacio-vip"
+              className="inline-flex items-center gap-1.5 text-xs text-[#555] hover:text-[#C9A84C] transition-colors"
+            >
+              <span style={{ fontSize: "0.6rem" }}>✦</span>
+              Espacio VIP
+            </a>
+          </div>
+        )}
+        {clienteReconocido && (
+          <div className="mb-5 inline-flex items-center gap-2 text-xs border border-[#1a1a1a] bg-[#0a0a0a] px-3 py-1.5">
+            <span className="text-[#C9A84C]">✓</span>
+            <span className="text-[#888]">Reservando como</span>
+            <span className="text-white font-medium">{clienteReconocido}</span>
+          </div>
+        )}
         <p className="section-label mb-4">{label}</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold">{title}</h2>
         <div className="divider-gold" />
@@ -218,6 +366,14 @@ export default function Reservas() {
     <section id="reservas" className="py-16 sm:py-28 px-4 sm:px-6 bg-[#050505]">
       <div className="max-w-lg mx-auto">
         <Header label="¿Listo para tu transformación?" title={<>Tus <span className="gold-text">datos</span></>} />
+
+        {/* Pantalla de carga mientras se verifica la sesión */}
+        {cargandoPerfil ? (
+          <div className="py-16 text-center">
+            <p className="text-[#444] text-sm">Verificando sesión...</p>
+          </div>
+        ) : (
+        <>
         <div className="card-premium p-6 space-y-4">
           <div>
             <label>Nombre y apellidos *</label>
@@ -310,6 +466,8 @@ export default function Reservas() {
         >
           Siguiente: elegir servicio →
         </button>
+        </>
+        )}
       </div>
     </section>
   );
@@ -320,6 +478,31 @@ export default function Reservas() {
       <div className="max-w-xl mx-auto">
         <Header label="Tu visita" title={<>Sede, barbero <span className="gold-text">y servicio</span></>} />
 
+        {ofertaAplicada && (
+          <div className="border border-[#C9A84C]/30 bg-[#C9A84C]/5 px-4 py-4 mb-6">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[#C9A84C] text-xs">✦</span>
+              <span className="text-[#C9A84C] font-semibold text-xs tracking-widest uppercase">Oferta seleccionada</span>
+            </div>
+            <p className="text-white text-sm font-medium pl-4">{ofertaAplicada}</p>
+            {precioOferta != null && (
+              <p className="text-[#aaa] text-xs pl-4 mt-1">
+                Precio especial:{" "}
+                <span className="text-[#C9A84C] font-bold">{precioOferta} €</span>
+                <span className="text-[#555] ml-1">(aplicado al confirmar)</span>
+              </p>
+            )}
+            {extraOferta && (
+              <p className="text-[#aaa] text-xs pl-4 mt-0.5">
+                Incluye: <span className="text-white">{extraOferta}</span>
+              </p>
+            )}
+            <p className="text-[#444] text-[10px] pl-4 mt-2 border-t border-[#1a1a1a] pt-2">
+              Las ofertas no son combinables entre sí ni con otros descuentos.
+            </p>
+          </div>
+        )}
+
         {!appData ? (
           <p className="text-[#444] text-center text-sm py-16">Cargando...</p>
         ) : (
@@ -328,18 +511,29 @@ export default function Reservas() {
             <div className="card-premium p-5">
               <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Sede</p>
               <div className="grid grid-cols-2 gap-3">
-                {appData.sedes.map((s) => (
+                {[...appData.sedes]
+                  .sort((a, b) => {
+                    const aQ = (a.direccion ?? "").toLowerCase().includes("san quirce");
+                    const bQ = (b.direccion ?? "").toLowerCase().includes("san quirce");
+                    return aQ === bQ ? 0 : aQ ? -1 : 1;
+                  })
+                  .map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => { set("sede_id", s.id); set("barbero_id", ""); }}
-                    className={`p-3 border text-sm text-center transition-all ${
+                    className={`p-3 border text-sm text-center transition-all flex flex-col items-center gap-1 ${
                       form.sede_id === s.id
                         ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
                         : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
                     }`}
                   >
-                    {s.nombre}
+                    <span className="font-medium">Monastery Barber Studio</span>
+                    {s.direccion && (
+                      <span className="text-[11px] leading-tight text-[#C9A84C] font-semibold tracking-wide">
+                        {s.direccion}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -360,13 +554,13 @@ export default function Reservas() {
                         set("hora", "");
                         if (form.fecha) cargarSlots(b.id, form.fecha);
                       }}
-                      className={`p-3 border text-xs text-center transition-all ${
+                      className={`p-3 border text-xs text-center transition-all flex flex-col items-center gap-1 ${
                         form.barbero_id === b.id
-                          ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
-                          : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
+                          ? "border-[#C9A84C] bg-[#C9A84C]/10"
+                          : "border-[#1f1f1f] hover:border-[#333]"
                       }`}
                     >
-                      {b.nombre}
+                      <span className="text-white font-semibold">{b.nombre}</span>
                     </button>
                   ))}
                 </div>
@@ -377,6 +571,21 @@ export default function Reservas() {
             {/* Servicio */}
             <div className="card-premium p-5">
               <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Servicio</p>
+              {servicioPreselect ? (
+                /* Servicio exclusivo o de oferta — ya confirmado, no se puede cambiar */
+                <div className="border border-[#C9A84C]/30 bg-[#C9A84C]/5 px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-white text-sm font-medium">{servicioPreselect.nombre}</p>
+                    <p className="text-[#555] text-[10px] mt-0.5">Servicio exclusivo · incluido en la oferta</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    {precioOferta != null && (
+                      <p className="text-[#C9A84C] font-bold text-sm">{precioOferta} €</p>
+                    )}
+                    <span className="text-[#C9A84C] text-[10px]">✓ Seleccionado</span>
+                  </div>
+                </div>
+              ) : (
               <div className="space-y-4">
                 {Object.entries(serviciosAgrupados).map(([cat, lista]) => (
                   <div key={cat}>
@@ -396,8 +605,16 @@ export default function Reservas() {
                           }`}
                         >
                           <span>{s.nombre}</span>
-                          <span className="text-xs ml-4 shrink-0">
-                            {s.duracion_minutos} min · {s.precio}€
+                          <span className="text-xs ml-4 shrink-0 flex items-center gap-1.5">
+                            {s.duracion_minutos} min ·
+                            {form.servicio_id === s.id && precioOferta != null ? (
+                              <>
+                                <span className="line-through opacity-40">{s.precio}€</span>
+                                <span className="text-[#C9A84C] font-bold">{precioOferta}€</span>
+                              </>
+                            ) : (
+                              <span>{s.precio}€</span>
+                            )}
                           </span>
                         </button>
                       ))}
@@ -405,6 +622,7 @@ export default function Reservas() {
                   </div>
                 ))}
               </div>
+              )}
               {errors.servicio_id && <p className="text-red-500 text-xs mt-2">{errors.servicio_id}</p>}
             </div>
           </div>
@@ -434,31 +652,98 @@ export default function Reservas() {
       <div className="max-w-xl mx-auto">
         <Header label="Elige tu momento" title={<>Fecha <span className="gold-text">y hora</span></>} />
 
+        {/* Aviso de restricciones de oferta */}
+        {ofertaAplicada && (franjaParam || mesesParam || diasParam) && (
+          <div className="border border-[#C9A84C]/20 bg-[#C9A84C]/5 px-4 py-3 mb-5 space-y-1">
+            {franjaParam === "manana" && (
+              <p className="text-xs text-[#888] flex items-center gap-1.5">
+                <span className="text-[#C9A84C]">◆</span>
+                Esta oferta aplica solo en horario de mañana (09:00–14:00)
+              </p>
+            )}
+            {mesesParam && (
+              <p className="text-xs text-[#888] flex items-center gap-1.5">
+                <span className="text-[#C9A84C]">◆</span>
+                {diasFiltrados.length > 0
+                  ? `Mostrando solo fechas válidas para esta oferta`
+                  : `Esta oferta no está disponible en los próximos días (solo en ${getNombreMeses(mesesParam)})`
+                }
+              </p>
+            )}
+            {diasParam === "1" && (
+              <p className="text-xs text-[#888] flex items-center gap-1.5">
+                <span className="text-[#C9A84C]">◆</span>
+                Esta oferta aplica solo los lunes
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Días */}
         <div className="card-premium p-5 mb-6">
           <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Día</p>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {dias.map((d) => (
-              <button
-                key={d.iso}
-                type="button"
-                onClick={() => {
-                  set("fecha", d.iso);
-                  set("hora", "");
-                  cargarSlots(form.barbero_id, d.iso);
-                }}
-                className={`shrink-0 px-3 py-2 border text-xs text-center transition-all min-w-[72px] ${
-                  form.fecha === d.iso
-                    ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
-                    : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
-                }`}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
+          {diasFiltrados.length === 0 ? (
+            <div className="py-4 text-center space-y-1">
+              <p className="text-[#555] text-sm">No hay fechas disponibles para esta oferta en los próximos días.</p>
+              {mesesParam && (
+                <p className="text-[#333] text-xs">
+                  Oferta disponible solo en {getNombreMeses(mesesParam)}.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {diasFiltrados.map((d) => (
+                <button
+                  key={d.iso}
+                  type="button"
+                  onClick={() => {
+                    set("fecha", d.iso);
+                    set("hora", "");
+                    cargarSlots(form.barbero_id, d.iso);
+                    if (ofertaAplicada === "Verano Refrescante") {
+                      cargarContador("Verano Refrescante", d.iso);
+                    }
+                  }}
+                  className={`shrink-0 px-3 py-2 border text-xs text-center transition-all min-w-[72px] ${
+                    form.fecha === d.iso
+                      ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
+                      : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
+                  }`}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          )}
           {errors.fecha && <p className="text-red-500 text-xs mt-2">{errors.fecha}</p>}
         </div>
+
+        {/* Contador de plazas para Verano Refrescante */}
+        {ofertaAplicada === "Verano Refrescante" && form.fecha && (
+          <div className={`px-4 py-3 mb-5 border text-xs ${
+            loadingContador
+              ? "border-[#222] text-[#555]"
+              : contadorOferta?.agotado
+              ? "border-red-900/40 bg-red-950/10 text-red-400"
+              : (contadorOferta?.disponibles ?? 10) <= 3
+              ? "border-amber-900/40 bg-amber-950/10 text-amber-400"
+              : "border-emerald-900/30 bg-emerald-950/10 text-emerald-400"
+          }`}>
+            {loadingContador ? (
+              <span>Consultando plazas disponibles...</span>
+            ) : contadorOferta?.agotado ? (
+              <span>✗ Las 10 plazas de Verano Refrescante para este día están agotadas. Elige otro día.</span>
+            ) : contadorOferta ? (
+              <span>
+                {contadorOferta.disponibles <= 3
+                  ? `⚡ ¡Solo quedan ${contadorOferta.disponibles} de 10 plazas para este día!`
+                  : `✓ Quedan ${contadorOferta.disponibles} de 10 plazas — Verano Refrescante`
+                }
+              </span>
+            ) : null}
+          </div>
+        )}
 
         {/* Slots */}
         {form.fecha && (
@@ -466,13 +751,16 @@ export default function Reservas() {
             <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Hora disponible</p>
             {loadingSlots ? (
               <p className="text-[#444] text-sm text-center py-4">Consultando disponibilidad...</p>
-            ) : slots.length === 0 ? (
+            ) : slotsMostrar.length === 0 ? (
               <p className="text-[#444] text-sm text-center py-4">
-                Sin horarios disponibles este día. Prueba con otro.
+                {franjaParam === "manana" && slots.length > 0
+                  ? "No hay horarios de mañana disponibles este día. Prueba con otro."
+                  : "Sin horarios disponibles este día. Prueba con otro."
+                }
               </p>
             ) : (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                {slots.map((s) => (
+                {slotsMostrar.map((s) => (
                   <button
                     key={s}
                     type="button"
@@ -498,7 +786,8 @@ export default function Reservas() {
           </button>
           <button
             onClick={() => validarFecha() && setStep("confirmar")}
-            className="btn-gold flex-1 justify-center"
+            disabled={contadorOferta?.agotado === true}
+            className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Siguiente: confirmar →
           </button>
@@ -520,7 +809,17 @@ export default function Reservas() {
             { label: "Nombre",   value: form.nombre },
             { label: "Sede",     value: sedeSel?.nombre ?? "—" },
             { label: "Barbero",  value: barberoSel?.nombre ?? "—" },
-            { label: "Servicio", value: `${servicioSel?.nombre} — ${servicioSel?.duracion_minutos} min · ${servicioSel?.precio}€` },
+            {
+              label: "Servicio",
+              value: servicioPreselect
+                ? `${servicioPreselect.nombre}${precioOferta != null ? ` · ${precioOferta} €` : ""}`
+                : `${servicioSel?.nombre} — ${servicioSel?.duracion_minutos} min · ${servicioSel?.precio}€`,
+            },
+            ...(ofertaAplicada ? [{
+              label: "Oferta",
+              value: [ofertaAplicada, precioOferta != null ? `${precioOferta} €` : null, extraOferta]
+                .filter(Boolean).join(" · "),
+            }] : []),
             { label: "Fecha",    value: formatFecha(form.fecha) },
             { label: "Hora",     value: form.hora },
           ].map((row) => (
@@ -604,6 +903,13 @@ export default function Reservas() {
             <p>{formatFecha(form.fecha)} a las {form.hora}</p>
             <p>{barberoSel?.nombre} · {sedeSel?.nombre}</p>
             <p>{servicioSel?.nombre}</p>
+            {ofertaAplicada && (
+              <p className="text-[#C9A84C] text-xs mt-1">
+                ✦ {ofertaAplicada}
+                {precioOferta != null && <span className="ml-1">· {precioOferta} €</span>}
+                {extraOferta && <span className="ml-1 text-[#888]">· {extraOferta}</span>}
+              </p>
+            )}
           </div>
           <p className="text-[#444] text-xs mb-8">
             Recibirás confirmación en <strong className="text-[#777]">{form.email}</strong>.

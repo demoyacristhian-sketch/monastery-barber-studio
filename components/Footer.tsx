@@ -80,13 +80,24 @@ export default function Footer() {
           <p className="text-[#333] text-xs">
             © {new Date().getFullYear()} Monastery Barber Studio. Todos los derechos reservados.
           </p>
-          <p className="text-[#222] text-xs">
+          <p className="text-[#555] text-xs">
             Desarrollado por{" "}
             <a
-              href="https://cdmlabs.com"
-              className="text-[#333] hover:text-[#C9A84C] transition-colors"
+              href="https://www.nownlab.es/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#C9A84C] font-semibold hover:text-white hover:underline transition-colors"
             >
-              CDM Labs
+              Nown
+            </a>
+            {" "}· ¿Quieres una web como esta?{" "}
+            <a
+              href="https://www.nownlab.es/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#888] hover:text-[#C9A84C] transition-colors underline"
+            >
+              nownlab.es
             </a>
           </p>
         </div>

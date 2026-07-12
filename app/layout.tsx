@@ -6,6 +6,10 @@ export const metadata: Metadata = {
   description:
     "Barbería urbana premium en Valladolid. Reserva con tu barbero de confianza. Donde el corte se convierte en ritual.",
   keywords: "barbería valladolid, corte de pelo valladolid, barber shop, monastery barber studio",
+  icons: {
+    icon: "/icons/icon-512.png",
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

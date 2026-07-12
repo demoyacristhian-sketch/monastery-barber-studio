@@ -16,6 +16,8 @@ export type ReservaInput = {
   hora: string;
   metodo_pago: string;
   notas?: string;
+  precio_oferta_override?: number;
+  oferta_nombre?: string;
 };
 
 export type ReservaResult =
@@ -75,11 +77,33 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     }
   }
 
-  const { data: servicioRaw } = await admin
-    .from("servicios")
-    .select("*")
-    .eq("id", input.servicio_id)
-    .single();
+  // Verano Refrescante: verificar plazas y asignar posición
+  const MAX_PLAZAS_VERANO = 10;
+  let posicionVerano: number | null = null;
+
+  if (input.oferta_nombre === "Verano Refrescante") {
+    const { count, error: countError } = await (admin.from("citas") as any)
+      .select("*", { count: "exact", head: true })
+      .gte("fecha_hora", `${input.fecha}T00:00:00`)
+      .lte("fecha_hora", `${input.fecha}T23:59:59`)
+      .ilike("notas_cliente", "%Verano Refrescante%")
+      .not("estado", "eq", "cancelada");
+
+    if (!countError) {
+      const ocupadas = count ?? 0;
+      if (ocupadas >= MAX_PLAZAS_VERANO) {
+        return {
+          ok: false,
+          error: `Las ${MAX_PLAZAS_VERANO} plazas de Verano Refrescante para este día ya están completas. Prueba con otro día de julio o agosto.`,
+        };
+      }
+      posicionVerano = ocupadas + 1;
+    }
+  }
+
+  const { data: servicioRaw } = input.servicio_id
+    ? await admin.from("servicios").select("*").eq("id", input.servicio_id).single()
+    : { data: null };
   const servicio = servicioRaw as Servicio | null;
 
   const fechaHora = `${input.fecha}T${input.hora}:00`;
@@ -97,9 +121,17 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     return { ok: false, error: "Ese horario acaba de ser reservado. Por favor elige otro." };
   }
 
+  // Inyectar posición de Verano Refrescante en las notas
+  const notasInput = (posicionVerano !== null && input.notas)
+    ? input.notas.replace(
+        "Verano Refrescante",
+        `Verano Refrescante · #${posicionVerano}/${MAX_PLAZAS_VERANO}`
+      )
+    : (input.notas ?? null);
+
   const notas = [
     input.metodo_pago ? `Pago: ${input.metodo_pago}` : null,
-    input.notas ?? null,
+    notasInput,
   ].filter(Boolean).join(" | ") || null;
 
   const { data: citaRaw, error: citaError } = await admin
@@ -107,12 +139,12 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     .insert({
       cliente_id:       clienteId,
       barbero_id:       input.barbero_id,
-      servicio_id:      input.servicio_id,
+      servicio_id:      input.servicio_id || null,
       sede_id:          input.sede_id,
       fecha_hora:       fechaHora,
       duracion_minutos: servicio?.duracion_minutos ?? 45,
       estado:           "pendiente",
-      precio_final:     servicio?.precio ?? null,
+      precio_final:     input.precio_oferta_override != null ? input.precio_oferta_override : (servicio?.precio ?? null),
       puntos_otorgados: 0,
       notas_cliente:    notas,
     } as any)

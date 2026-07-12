@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import {
   Users, CalendarDays, DollarSign, TrendingUp,
-  Plus, Check, X, Loader2, Pencil,
+  Plus, Check, X, Loader2, Pencil, Trash2,
 } from "lucide-react";
-import { actualizarBarbero, crearBarbero } from "@/app/actions/admin";
+import { actualizarBarbero, crearBarbero, eliminarBarbero } from "@/app/actions/admin";
 import BackButton from "./BackButton";
 
 type Barbero = {
@@ -125,12 +125,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 // ── Tarjeta de empleado ───────────────────────────────────────────────────────
-function TarjetaEmpleado({ b, sedes, stats, onToggle, onUpdate }: {
+function TarjetaEmpleado({ b, sedes, stats, onToggle, onUpdate, onEliminar }: {
   b: Barbero;
   sedes: Sede[];
   stats: { cortes: number; ingresos: number; ticketMedio: number };
   onToggle: () => void;
   onUpdate: (data: Partial<Barbero>) => void;
+  onEliminar: () => void;
 }) {
   const [editando, setEditando] = useState(false);
   const [form, setForm]         = useState<Partial<Barbero>>({});
@@ -234,6 +235,17 @@ function TarjetaEmpleado({ b, sedes, stats, onToggle, onUpdate }: {
                 <button onClick={iniciarEdit} className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition-colors">
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm(`¿Eliminar a ${b.nombre}? Esta acción no se puede deshacer.`)) return;
+                    const res = await eliminarBarbero(b.id);
+                    if (!res.ok) { alert(`Error al eliminar: ${(res as any).error}`); return; }
+                    onEliminar();
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-red-50 text-zinc-300 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </>
             )}
           </div>
@@ -283,6 +295,10 @@ export default function EquipoAdmin({ barberos, sedes, citasMes }: {
 
   function actualizarItem(id: string, data: Partial<Barbero>) {
     setItems(prev => prev.map(b => b.id === id ? { ...b, ...data } : b));
+  }
+
+  function eliminarItem(id: string) {
+    setItems(prev => prev.filter(b => b.id !== id));
   }
 
   function statsBarb(id: string) {
@@ -344,6 +360,7 @@ export default function EquipoAdmin({ barberos, sedes, citasMes }: {
               stats={statsBarb(b.id)}
               onToggle={() => toggleActivo(b.id)}
               onUpdate={data => actualizarItem(b.id, data)}
+              onEliminar={() => eliminarItem(b.id)}
             />
           ))}
         </div>

@@ -19,13 +19,20 @@ type Cita = {
   fecha_hora: string;
   estado: string;
   precio_final: number | null;
+  notas_cliente?: string | null;
   reagendar_solicitado?: boolean;
   reagendar_motivo?: string | null;
-  clientes: { nombre: string; telefono: string | null } | null;
+  clientes: { nombre: string; telefono: string | null; email?: string | null; fecha_nacimiento?: string | null } | null;
   servicios: { nombre: string; duracion_minutos: number | null } | null;
   barberos:  { nombre: string } | null;
   sedes?:    { nombre: string } | null;
 };
+
+function getOfertaTag(notas: string | null | undefined): string | null {
+  if (!notas) return null;
+  const match = notas.match(/Oferta:\s*([^|]+)/);
+  return match ? match[1].trim() : null;
+}
 
 type Periodo = "proximas" | "hoy" | "mañana" | "semana" | "mes";
 
@@ -370,6 +377,12 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
                             )}
                           </div>
                           {c.clientes?.telefono && <div className="text-xs text-zinc-400">{c.clientes.telefono}</div>}
+                          {c.clientes?.email && <div className="text-xs text-zinc-400">{c.clientes.email}</div>}
+                          {c.clientes?.fecha_nacimiento && (
+                            <div className="text-xs text-zinc-400">
+                              {new Date(c.clientes.fecha_nacimiento + "T12:00:00").toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                            </div>
+                          )}
                           {c.reagendar_motivo && c.reagendar_solicitado && (
                             <div className="text-xs text-amber-600 mt-0.5 max-w-[200px] truncate" title={c.reagendar_motivo}>
                               {c.reagendar_motivo}
@@ -379,7 +392,18 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
                       </div>
                     </td>
 
-                    <td className="px-4 py-3.5 text-zinc-600 whitespace-nowrap">{c.servicios?.nombre ?? "—"}</td>
+                    <td className="px-4 py-3.5">
+                      <p className="text-zinc-600 whitespace-nowrap">{c.servicios?.nombre ?? "—"}</p>
+                      {getOfertaTag(c.notas_cliente) && (
+                        <span
+                          className="inline-flex items-center gap-0.5 mt-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap"
+                          style={{ background: "#C9A84C20", color: "#C9A84C" }}
+                          title={getOfertaTag(c.notas_cliente) ?? ""}
+                        >
+                          ✦ {getOfertaTag(c.notas_cliente)}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3.5 text-zinc-600 whitespace-nowrap">{c.barberos?.nombre  ?? "—"}</td>
                     <td className="px-4 py-3.5 text-zinc-500 whitespace-nowrap">{dur ? `${dur} min` : "—"}</td>
                     <td className="px-4 py-3.5 text-zinc-900 font-medium tabular-nums whitespace-nowrap">{euros(c.precio_final)}</td>

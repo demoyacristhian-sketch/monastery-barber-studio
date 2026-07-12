@@ -54,11 +54,11 @@ const OFERTAS_VERANO: Oferta[] = [
   },
   {
     id: "cerveza-verano",
-    nombre: "Cerveza de Verano",
-    descripcion: "Reserva antes de las 12h durante julio y agosto: cerveza fría cortesía de Monastery. Menores de edad: refresco incluido.",
-    badge: "+18 🍺 / Menores 🥤",
-    condicion: "Jul–Ago · Lun–Vie · Antes de las 12:00",
-    extra: "Cortesía de la casa para todos",
+    nombre: "Verano Refrescante",
+    descripcion: "Solo 10 plazas al día durante julio y agosto. Reserva tu sitio y llévate una bebida fría de cortesía. Primero en llegar, primero en disfrutar.",
+    badge: "10 plazas/día 🍺",
+    condicion: "Jul–Ago · Lun–Vie · Solo las primeras 10 reservas del día",
+    extra: "Bebida incluida · Cerveza (+18) o refresco",
   },
 ];
 
@@ -81,6 +81,26 @@ const OFERTAS_SIEMPRE: Oferta[] = [
   },
 ];
 
+type OfertaAsignacion = {
+  servicio?: string;
+  precio?: number;
+  extra?: string;
+  franja?: string;  // "manana" = solo horario 09:00–14:00
+  meses?: string;   // "8" o "7,8,9" — meses válidos (1-12)
+  dias?: string;    // "1" = solo lunes (0=dom, 1=lun, ..., 6=sáb)
+};
+
+const SERVICIO_POR_OFERTA: Record<string, OfertaAsignacion> = {
+  "morning-ritual":   { servicio: "Corte Estándar", precio: 14,  extra: "Refresco incluido",             franja: "manana" },
+  "upgrade-mananero": { servicio: "Corte Medium",   precio: 22,  extra: "Ahorro de 3 € en el upgrade",   franja: "manana" },
+  "pack-madrugador":  { servicio: "Corte Medium",   precio: 20,  extra: "Snack incluido",                 franja: "manana" },
+  "verano-monastery": { servicio: "Corte Premium",  precio: 28,  meses: "8" },
+  "bono-verano":      { meses: "7,8,9" },
+  "cerveza-verano":   { extra: "Bebida incluida",                              meses: "7,8" },
+  "trae-amigo":       {},
+  "lunes-barba":      { servicio: "Solo Barba",     precio: 10,  dias: "1" },
+};
+
 function GrupoOfertas({ titulo, icono, ofertas, color }: {
   titulo: string;
   icono: string;
@@ -97,45 +117,57 @@ function GrupoOfertas({ titulo, icono, ofertas, color }: {
         <div className="flex-1 h-px ml-2" style={{ background: color + "30" }} />
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ofertas.map((o) => (
-          <div
-            key={o.id}
-            className="card-premium p-5 flex flex-col gap-3 relative overflow-hidden"
-          >
-            {/* Banda lateral de color */}
-            <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: color }} />
-
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-serif font-bold text-white text-base leading-tight">{o.nombre}</h3>
-              <span
-                className="text-xs font-bold px-2 py-0.5 rounded-sm shrink-0 whitespace-nowrap"
-                style={{ background: color + "20", color }}
-              >
-                {o.badge}
-              </span>
-            </div>
-
-            <p className="text-[#555] text-sm leading-relaxed flex-1">{o.descripcion}</p>
-
-            <div className="space-y-1 mt-auto">
-              <p className="text-[#333] text-xs flex items-center gap-1.5">
-                <span style={{ color }}>◆</span>
-                {o.condicion}
-              </p>
-              {o.extra && (
-                <p className="text-[#444] text-xs">{o.extra}</p>
-              )}
-            </div>
-
-            <Link
-              href="/reservas"
-              className="text-xs mt-1 transition-colors hover:text-white"
-              style={{ color }}
+        {ofertas.map((o) => {
+          const asig = SERVICIO_POR_OFERTA[o.id] ?? {};
+          const reservaHref = [
+            `/reservas?oferta=${encodeURIComponent(o.nombre)}`,
+            asig.servicio ? `&servicio=${encodeURIComponent(asig.servicio)}` : "",
+            asig.precio   ? `&precio=${asig.precio}`                          : "",
+            asig.extra    ? `&extra=${encodeURIComponent(asig.extra)}`         : "",
+            asig.franja   ? `&franja=${asig.franja}`                           : "",
+            asig.meses    ? `&meses=${encodeURIComponent(asig.meses)}`         : "",
+            asig.dias     ? `&dias=${asig.dias}`                               : "",
+          ].join("");
+          return (
+            <div
+              key={o.id}
+              className="card-premium p-5 flex flex-col gap-3 relative overflow-hidden"
             >
-              Reservar y aplicar →
-            </Link>
-          </div>
-        ))}
+              {/* Banda lateral de color */}
+              <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: color }} />
+
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-serif font-bold text-white text-base leading-tight">{o.nombre}</h3>
+                <span
+                  className="text-xs font-bold px-2 py-0.5 rounded-sm shrink-0 whitespace-nowrap"
+                  style={{ background: color + "20", color }}
+                >
+                  {o.badge}
+                </span>
+              </div>
+
+              <p className="text-[#555] text-sm leading-relaxed flex-1">{o.descripcion}</p>
+
+              <div className="space-y-1 mt-auto">
+                <p className="text-[#333] text-xs flex items-center gap-1.5">
+                  <span style={{ color }}>◆</span>
+                  {o.condicion}
+                </p>
+                {o.extra && (
+                  <p className="text-[#444] text-xs">{o.extra}</p>
+                )}
+              </div>
+
+              <Link
+                href={reservaHref}
+                className="text-xs mt-1 transition-colors hover:text-white"
+                style={{ color }}
+              >
+                Reservar y aplicar →
+              </Link>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

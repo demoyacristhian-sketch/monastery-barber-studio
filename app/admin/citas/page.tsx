@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 async function getCitas() {
   const admin = createAdminClient();
   const { data, error } = await (admin.from("citas") as any)
-    .select("id, fecha_hora, estado, precio_final, reagendar_solicitado, reagendar_motivo, clientes(nombre, telefono), barberos(nombre), servicios(nombre, duracion_minutos), sedes(nombre)")
+    .select("id, fecha_hora, estado, precio_final, notas_cliente, reagendar_solicitado, reagendar_motivo, clientes(nombre, telefono, email, fecha_nacimiento), barberos(nombre), servicios(nombre, duracion_minutos), sedes(nombre)")
     .order("fecha_hora", { ascending: true })
     .limit(500);
   if (error) {

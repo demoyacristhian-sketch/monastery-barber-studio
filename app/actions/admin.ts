@@ -398,3 +398,43 @@ export async function eliminarProducto(id: string) {
   revalidatePath("/admin/inventario");
   return { ok: true };
 }
+
+// ── Eliminar servicio ─────────────────────────────────────────────────────
+export async function eliminarServicio(id: string) {
+  const admin = createAdminClient();
+  const { error } = await (admin.from("servicios") as any).delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/config");
+  return { ok: true };
+}
+
+// ── Eliminar barbero ──────────────────────────────────────────────────────
+export async function eliminarBarbero(id: string) {
+  const admin = createAdminClient();
+  // Eliminar citas del barbero antes de borrar (barbero_id NOT NULL en citas)
+  const { error: errCitas } = await (admin.from("citas") as any)
+    .delete()
+    .eq("barbero_id", id);
+  if (errCitas) return { ok: false, error: errCitas.message };
+  const { error } = await (admin.from("barberos") as any).delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/config");
+  revalidatePath("/admin/equipo");
+  return { ok: true };
+}
+
+// ── Eliminar cliente ──────────────────────────────────────────────────────
+export async function eliminarCliente(id: string) {
+  const admin = createAdminClient();
+  // Eliminar citas del cliente antes de borrar para evitar FK constraint
+  const { error: errCitas } = await (admin.from("citas") as any)
+    .delete()
+    .eq("cliente_id", id);
+  if (errCitas) return { ok: false, error: errCitas.message };
+  // Eliminar fotos del cliente si las hay
+  await (admin.from("cliente_fotos") as any).delete().eq("cliente_id", id);
+  const { error } = await (admin.from("clientes") as any).delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/clientes");
+  return { ok: true };
+}

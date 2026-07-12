@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Reservas from "@/components/Reservas";
 import Politica from "@/components/Politica";
 import type { Metadata } from "next";
@@ -10,7 +11,13 @@ export const metadata: Metadata = {
 export default function ReservasPage() {
   return (
     <main className="pt-14 sm:pt-16">
-      <Reservas />
+      <Suspense fallback={
+        <section className="py-28 px-6 bg-[#050505] flex items-center justify-center min-h-[60vh]">
+          <p className="text-[#444] text-sm">Cargando reservas...</p>
+        </section>
+      }>
+        <Reservas />
+      </Suspense>
       <Politica />
     </main>
   );

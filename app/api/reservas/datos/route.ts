@@ -9,9 +9,9 @@ export async function GET() {
   const [sedesRes, barberosRes, serviciosRes] = await Promise.all([
     supabase
       .from("sedes")
-      .select("id, nombre")
+      .select("id, nombre, direccion")
       .eq("activa", true)
-      .order("nombre"),
+      .order("nombre", { ascending: false }),
     supabase
       .from("barberos")
       .select("id, nombre, sede_id")

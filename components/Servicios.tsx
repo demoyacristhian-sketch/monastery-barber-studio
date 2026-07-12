@@ -81,7 +81,7 @@ function ServiceCard({ s, large }: { s: Servicio; large?: boolean }) {
       <p className="text-[#555] text-sm leading-relaxed flex-1 mb-4">{s.descripcion}</p>
       <div className="flex items-center justify-between mt-auto">
         <span className="text-[#333] text-xs tracking-wider uppercase">{s.duracion}</span>
-        <Link href="/reservas" className="text-[#C9A84C] text-xs hover:text-white transition-colors">
+        <Link href={`/reservas?servicio=${encodeURIComponent(s.nombre)}`} className="text-[#C9A84C] text-xs hover:text-white transition-colors">
           Reservar →
         </Link>
       </div>

@@ -15,22 +15,31 @@ const OFERTAS = [
     tag: "Oferta del mes",
     titulo: "Pack Ritual Completo",
     desc: "Corte + barba + tratamiento con aceite de argán. Tu sesión más completa.",
-    precio: "45 € · antes 55 €",
+    precio: "45 €",
+    precioBase: "55 €",
     badge: "−18%",
+    servicio: "Pack Ritual Completo",
+    precioOferta: 45,
   },
   {
     tag: "Solo miembros",
     titulo: "Lunes de Barbería",
     desc: "Los lunes tienes prioridad de agenda y un 10% de descuento en cualquier servicio.",
-    precio: "Aplicado automáticamente",
+    precio: "−10% sobre cualquier servicio",
+    precioBase: undefined as string | undefined,
     badge: "−10%",
+    servicio: undefined as string | undefined,
+    precioOferta: undefined as number | undefined,
   },
   {
     tag: "Nuevo",
     titulo: "Tratamiento Capilar Profundo",
     desc: "Hidratación profesional con productos exclusivos. Disponible bajo reserva.",
     precio: "20 €",
+    precioBase: undefined as string | undefined,
     badge: "Nuevo",
+    servicio: "Tratamiento Capilar Profundo",
+    precioOferta: 20,
   },
 ];
 
@@ -97,7 +106,7 @@ export default async function BeneficiosPage() {
   const nivel = clienteRaw?.nivel as string | null;
 
   return (
-    <main className="min-h-screen bg-black py-10 px-4 sm:px-6">
+    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto space-y-16">
 
         {/* Header */}
@@ -116,22 +125,32 @@ export default async function BeneficiosPage() {
         <div>
           <p className="section-label mb-6">Ofertas exclusivas</p>
           <div className="grid md:grid-cols-3 gap-5">
-            {OFERTAS.map(o => (
-              <div key={o.titulo} className="card-premium p-6 relative overflow-hidden">
-                <div className="absolute top-4 right-4 text-[10px] px-2 py-0.5 bg-[#C9A84C] text-black font-bold tracking-wider">
-                  {o.badge}
+            {OFERTAS.map(o => {
+              const href = [
+                `/reservas?oferta=${encodeURIComponent(o.titulo)}`,
+                o.servicio    ? `&servicio=${encodeURIComponent(o.servicio)}`       : "",
+                o.precioOferta ? `&precio=${o.precioOferta}`                         : "",
+              ].join("");
+              return (
+                <div key={o.titulo} className="card-premium p-6 relative overflow-hidden flex flex-col">
+                  <div className="absolute top-4 right-4 text-[10px] px-2 py-0.5 bg-[#C9A84C] text-black font-bold tracking-wider">
+                    {o.badge}
+                  </div>
+                  <p className="section-label mb-2">{o.tag}</p>
+                  <h3 className="font-serif text-lg font-bold text-white mb-2">{o.titulo}</h3>
+                  <p className="text-[#555] text-sm mb-4 leading-relaxed flex-1">{o.desc}</p>
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <p className="text-[#C9A84C] text-sm font-bold">{o.precio}</p>
+                    {o.precioBase && (
+                      <p className="text-[#444] text-xs line-through">{o.precioBase}</p>
+                    )}
+                  </div>
+                  <Link href={href} className="text-[#C9A84C] text-xs hover:text-white transition-colors self-start">
+                    Reservar esta oferta →
+                  </Link>
                 </div>
-                <p className="section-label mb-2">{o.tag}</p>
-                <h3 className="font-serif text-lg font-bold text-white mb-2">{o.titulo}</h3>
-                <p className="text-[#555] text-sm mb-4 leading-relaxed">{o.desc}</p>
-                <p className="text-[#C9A84C] text-sm font-medium">{o.precio}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Link href="/reservas" className="btn-gold inline-flex text-sm">
-              Reservar y aplicar oferta →
-            </Link>
+              );
+            })}
           </div>
         </div>
 

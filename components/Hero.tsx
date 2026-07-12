@@ -18,15 +18,7 @@ export default function Hero() {
         loop
         playsInline
       >
-        {/* Plano amplio — barbería urbana premium, personas jóvenes, sillas + espejos visibles */}
-        <source
-          src="https://videos.pexels.com/video-files/3998440/3998440-uhd_2732_1440_25fps.mp4"
-          type="video/mp4"
-        />
-        <source
-          src="https://videos.pexels.com/video-files/6151289/6151289-hd_1920_1080_30fps.mp4"
-          type="video/mp4"
-        />
+        <source src="/videos/hero-barberia.mp4" type="video/mp4" />
       </video>
 
       {/* Overlays atmosféricos sobre el video */}
