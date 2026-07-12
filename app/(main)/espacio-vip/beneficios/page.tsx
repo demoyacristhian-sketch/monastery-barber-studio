@@ -66,20 +66,20 @@ const PLANES = [
     nombre: "Silver",
     precio: "29 €/mes",
     color: "#aaa",
-    beneficios: ["2 cortes al mes", "5% descuento en servicios", "Acceso a ofertas exclusivas"],
+    beneficios: ["2 cortes al mes", "Acceso al Espacio VIP", "Acceso a ofertas exclusivas"],
   },
   {
     nombre: "Gold",
-    precio: "49 €/mes",
+    precio: "40 €/mes",
     color: "#C9A84C",
-    beneficios: ["4 cortes al mes", "10% descuento en todos los servicios", "Prioridad de agenda", "Acceso VIP a tendencias"],
+    beneficios: ["2 cortes al mes", "Barba incluida en cada visita", "Perfilado de cejas incluido", "Prioridad de agenda", "Acceso VIP a tendencias"],
     destacado: true,
   },
   {
     nombre: "Black",
-    precio: "79 €/mes",
+    precio: "60 €/mes",
     color: "#888",
-    beneficios: ["8 cortes al mes", "15% descuento en servicios", "Prioridad absoluta de agenda", "Consultoría de imagen personal", "Acceso a productos exclusivos"],
+    beneficios: ["2 cortes Premium al mes", "Barba + cejas incluidas", "Depilación nariz y oído", "Lavado de cabello incluido", "Prioridad absoluta de agenda", "Acceso a productos exclusivos"],
   },
 ];
 

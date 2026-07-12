@@ -1,27 +1,20 @@
-// Replace CALENDLY_BARBERO_X_URL with actual Calendly URLs before launch
+import Link from "next/link";
+
 export const BARBEROS = [
   {
     id: 1,
-    nombre: "Barbero 1",
-    sede: "Sede S. Quirce",
-    especialidad: "Maestro en degradados y cortes modernos con más de 8 años de experiencia. Técnica precisa, trato cercano y atención al detalle que marcan la diferencia.",
-    calendlyUrl: "CALENDLY_BARBERO_1_URL",
+    nombre: "Jonathan Suárez",
+    sede: "Monastery San Quirce",
+    especialidad:
+      "Maestro barbero con más de 10 años de experiencia especializado en cortes de precisión, degradados y diseño personalizado. Jonathan domina desde el corte clásico hasta las técnicas más contemporáneas, siempre con un nivel de detalle que distingue cada trabajo. Su pasión por el oficio y su trato cercano lo convierten en referencia en Monastery San Quirce.",
     foto: null,
   },
   {
     id: 2,
-    nombre: "Barbero 2",
-    sede: "Sede S. Quirce",
-    especialidad: "Especialista en diseño de barba y afeitado clásico con cuchilla. Combina técnica tradicional con estilo contemporáneo para resultados únicos.",
-    calendlyUrl: "CALENDLY_BARBERO_2_URL",
-    foto: null,
-  },
-  {
-    id: 3,
-    nombre: "Barbero 3",
-    sede: "Sede Recoletos",
-    especialidad: "Experto en cortes personalizados y tratamientos capilares. Cada visita es una experiencia de cuidado integral adaptada a tu imagen.",
-    calendlyUrl: "CALENDLY_BARBERO_3_URL",
+    nombre: "Daniel Quiñones",
+    sede: "Monastery Recoletos",
+    especialidad:
+      "Con más de 10 años de trayectoria, Daniel es especialista en barba, afeitado clásico y tratamientos capilares premium. Su técnica combina la tradición del barbero artesano con las tendencias actuales, logrando resultados únicos en cada sesión. En Monastery Recoletos, Daniel cuida cada detalle para que tu imagen sea siempre impecable.",
     foto: null,
   },
 ];
@@ -42,10 +35,10 @@ export default function Barberos() {
           </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Cards — centradas cuando son 2 */}
+        <div className="flex flex-col md:flex-row gap-8 justify-center max-w-3xl mx-auto">
           {BARBEROS.map((b) => (
-            <div key={b.id} className="card-premium overflow-hidden">
+            <div key={b.id} className="card-premium overflow-hidden flex-1">
               {/* Photo area */}
               <div className="barbero-photo relative">
                 {b.foto ? (
@@ -76,12 +69,12 @@ export default function Barberos() {
                 <h3 className="font-serif text-xl font-bold mb-1">{b.nombre}</h3>
                 <div className="w-8 h-0.5 bg-[#C9A84C] mb-4" />
                 <p className="text-[#888] text-sm leading-relaxed mb-6">{b.especialidad}</p>
-                <a
+                <Link
                   href="/reservas"
-                  className="btn-gold w-full text-center justify-center text-xs"
+                  className="btn-gold w-full text-center justify-center text-xs inline-flex"
                 >
                   Reservar con {b.nombre.split(" ")[0]}
-                </a>
+                </Link>
               </div>
             </div>
           ))}

@@ -1,109 +1,99 @@
-import type { ReactNode } from "react";
+import Link from "next/link";
 
-/* ── Premium SVG icons ── */
-const ScissorsIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none" stroke="#C9A84C" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="7" cy="7.5" r="3.8" />
-    <circle cx="7" cy="24.5" r="3.8" />
-    <path d="M27 4.5L10 18" />
-    <path d="M18 18.5L27 27.5" />
-    <path d="M10 10.5L14.5 14" />
-  </svg>
-);
+type Servicio = {
+  nombre: string;
+  descripcion: string;
+  precio: string;
+  duracion: string;
+  destacado?: boolean;
+};
 
-const RazorIcon = () => (
-  <svg className="w-9 h-8" viewBox="0 0 38 28" fill="none" stroke="#C9A84C" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="10" width="11" height="8" rx="2" />
-    <line x1="5.5" y1="14" x2="9.5" y2="14" strokeWidth="0.9" strokeOpacity="0.55" />
-    <circle cx="13" cy="14" r="1.3" fill="#C9A84C" stroke="none" />
-    <path d="M13 11 L36 9 L36 19 L13 17 Z" fill="rgba(201,168,76,0.07)" />
-    <line x1="13" y1="14" x2="36" y2="14" strokeWidth="0.55" strokeOpacity="0.3" />
-  </svg>
-);
-
-const CombIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none" stroke="#C9A84C" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="8" width="26" height="7" rx="1.5" />
-    {[7, 11, 15, 19, 23].map((x) => (
-      <line key={x} x1={x} y1="15" x2={x} y2="24" />
-    ))}
-  </svg>
-);
-
-const DiamondIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 32 32" fill="none" stroke="#C9A84C" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M16 3 L29 13 L16 29 L3 13 Z" />
-    <path d="M3 13 L16 3 L29 13" />
-    <line x1="3" y1="13" x2="29" y2="13" strokeOpacity="0.45" strokeWidth="0.9" />
-    <line x1="10" y1="13" x2="16" y2="3" strokeOpacity="0.35" strokeWidth="0.9" />
-    <line x1="22" y1="13" x2="16" y2="3" strokeOpacity="0.35" strokeWidth="0.9" />
-  </svg>
-);
-
-type Categoria = { nombre: string; icono: ReactNode; servicios: string[] };
-
-const categorias: Categoria[] = [
+const PRINCIPALES: Servicio[] = [
   {
-    nombre: "Cortes de Cabello",
-    icono: <ScissorsIcon />,
-    servicios: [
-      "Corte con degradado",
-      "Corte difuminado",
-      "Corte con tijeras",
-      "Corte de pelo con navaja",
-      "Corte personalizado",
-      "Corte casi rapado",
-      "Corte estilo militar",
-      "Corte de pelo largo",
-      "Cortes infantiles",
-      "Pelo rizado",
-    ],
+    nombre: "Corte Estándar",
+    descripcion: "Corte de cabello con técnica precisa adaptada a tu estilo y estructura facial.",
+    precio: "17 €",
+    duracion: "35 min",
   },
   {
-    nombre: "Barba & Afeitado",
-    icono: <RazorIcon />,
-    servicios: [
-      "Recorte de barba",
-      "Mantenimiento de barba",
-      "Acondicionamiento de barba",
-      "Afeitado",
-      "Afeitado con navaja",
-      "Afeitado con toallas calientes",
-      "Afeitado de cabeza",
-      "Tinte de barba",
-    ],
+    nombre: "Corte Medium",
+    descripcion: "Corte de cabello + arreglo de barba + perfilado de cejas. La combinación perfecta.",
+    precio: "25 €",
+    duracion: "45 min",
+    destacado: true,
   },
   {
-    nombre: "Tratamientos Capilares",
-    icono: <CombIcon />,
-    servicios: [
-      "Tratamiento capilar",
-      "Tratamiento para el cuero cabelludo",
-      "Champú y acondicionador",
-      "Alisado",
-      "Permanente",
-      "Extensiones de cabello",
-      "Coloración capilar",
-    ],
-  },
-  {
-    nombre: "Estética & Complementos",
-    icono: <DiamondIcon />,
-    servicios: [
-      "Recorte de cejas",
-      "Teñido de cejas",
-      "Depilación con cera",
-      "Depilación masculina",
-      "Manicura masculina",
-      "Paquetes para novios",
-    ],
+    nombre: "Corte Premium",
+    descripcion: "Experiencia completa: corte + barba + cejas + depilación nariz y oído + lavado de cabello.",
+    precio: "35 €",
+    duracion: "60 min",
+    destacado: true,
   },
 ];
+
+const COMPLEMENTOS: Servicio[] = [
+  {
+    nombre: "Solo Barba",
+    descripcion: "Perfilado, recorte y definición de barba con productos premium.",
+    precio: "12 €",
+    duracion: "20 min",
+  },
+  {
+    nombre: "Retoque de Corte",
+    descripcion: "Refresca tu corte entre visitas. Acabado limpio y preciso.",
+    precio: "12 €",
+    duracion: "20 min",
+  },
+  {
+    nombre: "Corte + Diseño",
+    descripcion: "Corte con diseño personalizado y perfilado artístico.",
+    precio: "20 €",
+    duracion: "45 min",
+  },
+  {
+    nombre: "Tinte Completo",
+    descripcion: "Coloración completa del cabello con tintes profesionales de alta duración.",
+    precio: "65 €",
+    duracion: "90 min",
+  },
+  {
+    nombre: "Mechas",
+    descripcion: "Mechas y decoloración parcial para un resultado natural y con volumen.",
+    precio: "50 €",
+    duracion: "90 min",
+  },
+];
+
+function ServiceCard({ s, large }: { s: Servicio; large?: boolean }) {
+  return (
+    <div className={`card-premium p-6 flex flex-col ${s.destacado ? "border-[#C9A84C]/30" : ""}`}>
+      {s.destacado && (
+        <span className="self-start text-[10px] tracking-widest uppercase bg-[#C9A84C] text-black px-2 py-0.5 font-bold mb-3">
+          Más solicitado
+        </span>
+      )}
+      <div className="flex items-start justify-between gap-4 mb-2">
+        <h3 className={`font-serif font-bold text-white ${large ? "text-2xl" : "text-lg"}`}>
+          {s.nombre}
+        </h3>
+        <span className="text-[#C9A84C] font-bold text-xl shrink-0">{s.precio}</span>
+      </div>
+      <p className="text-[#555] text-sm leading-relaxed flex-1 mb-4">{s.descripcion}</p>
+      <div className="flex items-center justify-between mt-auto">
+        <span className="text-[#333] text-xs tracking-wider uppercase">{s.duracion}</span>
+        <Link href="/reservas" className="text-[#C9A84C] text-xs hover:text-white transition-colors">
+          Reservar →
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export default function Servicios() {
   return (
     <section id="servicios" className="py-16 sm:py-28 px-4 sm:px-6 bg-black">
       <div className="max-w-6xl mx-auto">
+
         {/* Header */}
         <div className="text-center mb-10 sm:mb-20">
           <p className="section-label mb-4">Lo que hacemos</p>
@@ -116,50 +106,40 @@ export default function Servicios() {
           </p>
         </div>
 
-        {/* Price note */}
-        <div className="border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-4 mb-8 sm:mb-14 text-center max-w-xl mx-auto">
-          <p className="text-[#C9A84C] text-xs tracking-widest uppercase font-semibold">
-            Precios · Consultar en reserva
-          </p>
-          <p className="text-[#666] text-sm mt-1">
-            Tarifas disponibles al confirmar tu cita o en nuestras sedes
-          </p>
+        {/* Principales */}
+        <div className="mb-4">
+          <p className="section-label mb-6">Servicios principales</p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {PRINCIPALES.map((s) => <ServiceCard key={s.nombre} s={s} large />)}
+          </div>
         </div>
 
-        {/* Categories grid */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {categorias.map((cat) => (
-            <div key={cat.nombre} className="card-premium p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex-shrink-0">{cat.icono}</div>
-                <div>
-                  <h3 className="font-serif text-xl font-bold text-white">{cat.nombre}</h3>
-                  <div className="w-10 h-0.5 bg-[#C9A84C] mt-1" />
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {cat.servicios.map((s) => (
-                  <span key={s} className="service-tag">
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+        {/* Separador */}
+        <div className="my-14 flex items-center gap-4">
+          <div className="flex-1 h-px bg-[#111]" />
+          <span className="section-label">Complementos</span>
+          <div className="flex-1 h-px bg-[#111]" />
+        </div>
+
+        {/* Complementos */}
+        <div className="mb-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {COMPLEMENTOS.map((s) => <ServiceCard key={s.nombre} s={s} />)}
+          </div>
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-14">
-          <p className="text-[#666] text-sm mb-6">
-            ¿No encuentras lo que buscas? Consúltanos directamente.
-          </p>
+        <div className="text-center mt-16">
+          <Link href="/reservas" className="inline-flex btn-gold mr-4">
+            Reservar cita →
+          </Link>
           <a
-            href="https://instagram.com/monasterybarberia"
+            href="https://wa.me/34642861499"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex btn-outline"
           >
-            Contactar por Instagram
+            Consultar por WhatsApp
           </a>
         </div>
       </div>
