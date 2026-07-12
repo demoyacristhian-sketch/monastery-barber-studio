@@ -15,6 +15,7 @@ type Form = {
   nombre: string; email: string; movil: string; fecha_nacimiento: string;
   sede_id: string; barbero_id: string; servicio_id: string;
   fecha: string; hora: string; metodo_pago: string; notas: string;
+  acepta_privacidad: boolean;
 };
 
 type Step = "datos" | "servicio" | "fecha" | "confirmar" | "exito";
@@ -64,12 +65,13 @@ export default function Reservas() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [citaId, setCitaId] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof Form | "acepta_privacidad", string>>>({});
 
   const [form, setForm] = useState<Form>({
     nombre: "", email: "", movil: "", fecha_nacimiento: "",
     sede_id: "", barbero_id: "", servicio_id: "",
     fecha: "", hora: "", metodo_pago: "", notas: "",
+    acepta_privacidad: false,
   });
 
   // Pre-fill con datos del usuario autenticado
@@ -122,6 +124,7 @@ export default function Reservas() {
     } else if (new Date(form.fecha_nacimiento) >= new Date()) {
       e.fecha_nacimiento = "La fecha debe ser anterior a hoy";
     }
+    if (!form.acepta_privacidad) e.acepta_privacidad = "Debes aceptar la política de privacidad";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -270,6 +273,35 @@ export default function Reservas() {
               placeholder="Preferencias, alergias, peticiones especiales..."
               className="h-20 resize-none"
             />
+          </div>
+
+          {/* Política de privacidad */}
+          <div className="pt-2">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={form.acepta_privacidad}
+                onChange={(e) => set("acepta_privacidad", e.target.checked)}
+                className="mt-0.5 shrink-0 accent-[#C9A84C] w-4 h-4"
+              />
+              <span className="text-xs text-[#666] leading-relaxed group-hover:text-[#888] transition-colors">
+                He leído y acepto la{" "}
+                <a
+                  href="/privacidad"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#C9A84C] hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Política de Privacidad y Cookies
+                </a>{" "}
+                de Monastery Barber Studio. Consiento el tratamiento de mis datos personales,
+                incluida la fecha de nacimiento, para la gestión de reservas y el descuento de cumpleaños. *
+              </span>
+            </label>
+            {errors.acepta_privacidad && (
+              <p className="text-red-500 text-xs mt-1.5 pl-7">{errors.acepta_privacidad}</p>
+            )}
           </div>
         </div>
         <button
