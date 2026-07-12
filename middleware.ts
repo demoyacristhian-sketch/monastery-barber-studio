@@ -36,7 +36,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Rutas de admin: requieren sesión + rol staff
-  const esRutaAdmin = RUTAS_ADMIN.some((r) => pathname.startsWith(r));
+  // Usamos `=== r || startsWith(r + "/")` para que /admin-login no sea tratado como ruta admin
+  const esRutaAdmin = RUTAS_ADMIN.some((r) => pathname === r || pathname.startsWith(r + "/"));
   if (esRutaAdmin) {
     if (!user) return NextResponse.redirect(new URL("/admin-login", request.url));
     const esStaff = user.app_metadata?.role === "staff";

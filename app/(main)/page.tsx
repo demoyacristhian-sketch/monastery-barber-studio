@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Hero from "@/components/Hero";
 import Instagram from "@/components/Instagram";
+import Ofertas from "@/components/Ofertas";
 
 const ScissorsIcon = () => (
   <svg className="w-10 h-10" viewBox="0 0 32 32" fill="none" stroke="#C9A84C" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">
@@ -76,8 +77,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { num: "2", label: "Sedes en Valladolid" },
-            { num: "30+", label: "Servicios disponibles" },
-            { num: "5+", label: "Años de experiencia" },
+            { num: "8+", label: "Servicios disponibles" },
+            { num: "10+", label: "Años de experiencia" },
             { num: "100%", label: "Calidad premium" },
           ].map((s) => (
             <div key={s.label}>
@@ -123,6 +124,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Ofertas & Promociones ── */}
+      <Ofertas />
 
       {/* ── Sedes teaser ── */}
       <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[#050505]">
