@@ -48,5 +48,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|images|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // admin-login queda excluido explícitamente para evitar cualquier bucle de redirección
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|images|admin-login|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
