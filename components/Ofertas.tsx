@@ -13,10 +13,9 @@ const OFERTAS_MANANA: Oferta[] = [
   {
     id: "morning-ritual",
     nombre: "Morning Ritual",
-    descripcion: "Corte Estándar a precio reducido. Ven por la mañana y llévate un refresco o cerveza de regalo.",
+    descripcion: "Corte Estándar a precio reducido. Reserva en horario de mañana y disfruta de tu corte por solo 14 €.",
     badge: "17 € → 14 €",
     condicion: "Lun–Vie · 09:00–14:00",
-    extra: "🍺 Bebida incluida",
   },
   {
     id: "upgrade-mananero",
