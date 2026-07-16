@@ -30,7 +30,7 @@ export default function Barberos() {
             Nuestros <span className="gold-text">profesionales</span>
           </h2>
           <div className="divider-gold" />
-          <p className="text-[#666] text-sm mt-4 max-w-md mx-auto">
+          <p className="text-[#aaa] text-sm mt-4 max-w-md mx-auto">
             Artesanos del estilo comprometidos con la excelencia en cada corte
           </p>
         </div>

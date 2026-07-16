@@ -9,7 +9,7 @@ export default function Instagram() {
           Vive la experiencia{" "}
           <span className="gold-text">Monastery</span>
         </h2>
-        <p className="text-[#666] text-sm mb-10 max-w-md mx-auto">
+        <p className="text-[#aaa] text-sm mb-10 max-w-md mx-auto">
           Cortes, transformaciones y el día a día de nuestras sedes. Toda la inspiración en nuestro Instagram.
         </p>
 

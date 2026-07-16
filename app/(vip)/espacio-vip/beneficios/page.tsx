@@ -116,7 +116,7 @@ export default async function BeneficiosPage() {
             Beneficios <span className="gold-text">VIP</span>
           </h1>
           <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
-          <p className="text-[#555] text-sm mt-3">
+          <p className="text-[#999] text-sm mt-3">
             Ofertas exclusivas, tendencias del sector y ventajas de membresía reservadas para nuestros clientes.
           </p>
         </div>
@@ -138,11 +138,11 @@ export default async function BeneficiosPage() {
                   </div>
                   <p className="section-label mb-2">{o.tag}</p>
                   <h3 className="font-serif text-lg font-bold text-white mb-2">{o.titulo}</h3>
-                  <p className="text-[#555] text-sm mb-4 leading-relaxed flex-1">{o.desc}</p>
+                  <p className="text-[#999] text-sm mb-4 leading-relaxed flex-1">{o.desc}</p>
                   <div className="flex items-baseline gap-2 mb-4">
                     <p className="text-[#C9A84C] text-sm font-bold">{o.precio}</p>
                     {o.precioBase && (
-                      <p className="text-[#444] text-xs line-through">{o.precioBase}</p>
+                      <p className="text-[#888] text-xs line-through">{o.precioBase}</p>
                     )}
                   </div>
                   <Link href={href} className="text-[#C9A84C] text-xs hover:text-white transition-colors self-start">
@@ -157,7 +157,7 @@ export default async function BeneficiosPage() {
         {/* Membresías */}
         <div>
           <p className="section-label mb-2">La Orden — Membresías</p>
-          <p className="text-[#555] text-sm mb-6">
+          <p className="text-[#999] text-sm mb-6">
             Hazte miembro y accede a cortes ilimitados, descuentos y prioridad de agenda.
             Habla con tu barbero para activar tu plan.
           </p>
@@ -183,7 +183,7 @@ export default async function BeneficiosPage() {
                 )}
                 <ul className="space-y-2">
                   {p.beneficios.map(b => (
-                    <li key={b} className="text-[#555] text-xs flex items-start gap-2">
+                    <li key={b} className="text-[#999] text-xs flex items-start gap-2">
                       <span className="text-[#C9A84C] mt-0.5 shrink-0">·</span>
                       {b}
                     </li>
@@ -192,7 +192,7 @@ export default async function BeneficiosPage() {
               </div>
             ))}
           </div>
-          <p className="text-[#333] text-xs text-center mt-4">
+          <p className="text-[#777] text-xs text-center mt-4">
             Para activar o cambiar tu membresía, habla con tu barbero o escríbenos por WhatsApp.
           </p>
         </div>
@@ -205,10 +205,10 @@ export default async function BeneficiosPage() {
               <div key={t.titulo} className="card-premium p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span className="section-label text-[10px]">{t.categoria}</span>
-                  <span className="text-[#333] text-xs">{t.tiempo}</span>
+                  <span className="text-[#777] text-xs">{t.tiempo}</span>
                 </div>
                 <h3 className="font-serif text-xl font-bold text-white mb-2">{t.titulo}</h3>
-                <p className="text-[#555] text-sm leading-relaxed">{t.desc}</p>
+                <p className="text-[#999] text-sm leading-relaxed">{t.desc}</p>
               </div>
             ))}
           </div>
@@ -219,7 +219,7 @@ export default async function BeneficiosPage() {
           <h3 className="font-serif text-2xl font-bold mb-2">
             ¿Listo para tu próxima <span className="gold-text">sesión</span>?
           </h3>
-          <p className="text-[#555] text-sm mb-6 max-w-sm mx-auto">
+          <p className="text-[#999] text-sm mb-6 max-w-sm mx-auto">
             Reserva ahora y aplica automáticamente tus beneficios de miembro.
           </p>
           <Link href="/reservas" className="btn-gold inline-flex">

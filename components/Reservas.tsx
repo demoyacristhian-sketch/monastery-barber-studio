@@ -326,7 +326,7 @@ export default function Reservas() {
           <div className="mb-3 flex justify-center">
             <a
               href="/espacio-vip"
-              className="inline-flex items-center gap-1.5 text-xs text-[#555] hover:text-[#C9A84C] transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-[#999] hover:text-[#C9A84C] transition-colors"
             >
               <span style={{ fontSize: "0.6rem" }}>✦</span>
               Espacio VIP
@@ -345,7 +345,7 @@ export default function Reservas() {
         <div className="divider-gold" />
         {step !== "exito" && (
           <div className="mt-6 max-w-xs mx-auto">
-            <div className="flex justify-between text-xs text-[#444] mb-1">
+            <div className="flex justify-between text-xs text-[#888] mb-1">
               <span>Paso {pasoIdx + 1} de {pasos.length}</span>
               <span>{progreso}%</span>
             </div>
@@ -370,7 +370,7 @@ export default function Reservas() {
         {/* Pantalla de carga mientras se verifica la sesión */}
         {cargandoPerfil ? (
           <div className="py-16 text-center">
-            <p className="text-[#444] text-sm">Verificando sesión...</p>
+            <p className="text-[#888] text-sm">Verificando sesión...</p>
           </div>
         ) : (
         <>
@@ -440,7 +440,7 @@ export default function Reservas() {
                 onChange={(e) => set("acepta_privacidad", e.target.checked)}
                 className="mt-0.5 shrink-0 accent-[#C9A84C] w-4 h-4"
               />
-              <span className="text-xs text-[#666] leading-relaxed group-hover:text-[#888] transition-colors">
+              <span className="text-xs text-[#aaa] leading-relaxed group-hover:text-[#888] transition-colors">
                 He leído y acepto la{" "}
                 <a
                   href="/privacidad"
@@ -489,7 +489,7 @@ export default function Reservas() {
               <p className="text-[#aaa] text-xs pl-4 mt-1">
                 Precio especial:{" "}
                 <span className="text-[#C9A84C] font-bold">{precioOferta} €</span>
-                <span className="text-[#555] ml-1">(aplicado al confirmar)</span>
+                <span className="text-[#999] ml-1">(aplicado al confirmar)</span>
               </p>
             )}
             {extraOferta && (
@@ -497,14 +497,14 @@ export default function Reservas() {
                 Incluye: <span className="text-white">{extraOferta}</span>
               </p>
             )}
-            <p className="text-[#444] text-[10px] pl-4 mt-2 border-t border-[#1a1a1a] pt-2">
+            <p className="text-[#888] text-[10px] pl-4 mt-2 border-t border-[#1a1a1a] pt-2">
               Las ofertas no son combinables entre sí ni con otros descuentos.
             </p>
           </div>
         )}
 
         {!appData ? (
-          <p className="text-[#444] text-center text-sm py-16">Cargando...</p>
+          <p className="text-[#888] text-center text-sm py-16">Cargando...</p>
         ) : (
           <div className="space-y-6">
             {/* Sede */}
@@ -525,7 +525,7 @@ export default function Reservas() {
                     className={`p-3 border text-sm text-center transition-all flex flex-col items-center gap-1 ${
                       form.sede_id === s.id
                         ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
-                        : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
+                        : "border-[#1f1f1f] text-[#aaa] hover:border-[#333]"
                     }`}
                   >
                     <span className="font-medium">Monastery Barber Studio</span>
@@ -576,7 +576,7 @@ export default function Reservas() {
                 <div className="border border-[#C9A84C]/30 bg-[#C9A84C]/5 px-4 py-3 flex items-center justify-between">
                   <div>
                     <p className="text-white text-sm font-medium">{servicioPreselect.nombre}</p>
-                    <p className="text-[#555] text-[10px] mt-0.5">Servicio exclusivo · incluido en la oferta</p>
+                    <p className="text-[#999] text-[10px] mt-0.5">Servicio exclusivo · incluido en la oferta</p>
                   </div>
                   <div className="text-right shrink-0">
                     {precioOferta != null && (
@@ -589,7 +589,7 @@ export default function Reservas() {
               <div className="space-y-4">
                 {Object.entries(serviciosAgrupados).map(([cat, lista]) => (
                   <div key={cat}>
-                    <p className="text-[#555] text-[10px] tracking-widest uppercase mb-2">
+                    <p className="text-[#999] text-[10px] tracking-widest uppercase mb-2">
                       {CATEGORIAS[cat] ?? cat}
                     </p>
                     <div className="space-y-1">
@@ -684,9 +684,9 @@ export default function Reservas() {
           <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Día</p>
           {diasFiltrados.length === 0 ? (
             <div className="py-4 text-center space-y-1">
-              <p className="text-[#555] text-sm">No hay fechas disponibles para esta oferta en los próximos días.</p>
+              <p className="text-[#999] text-sm">No hay fechas disponibles para esta oferta en los próximos días.</p>
               {mesesParam && (
-                <p className="text-[#333] text-xs">
+                <p className="text-[#777] text-xs">
                   Oferta disponible solo en {getNombreMeses(mesesParam)}.
                 </p>
               )}
@@ -708,7 +708,7 @@ export default function Reservas() {
                   className={`shrink-0 px-3 py-2 border text-xs text-center transition-all min-w-[72px] ${
                     form.fecha === d.iso
                       ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
-                      : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
+                      : "border-[#1f1f1f] text-[#aaa] hover:border-[#333]"
                   }`}
                 >
                   {d.label}
@@ -723,7 +723,7 @@ export default function Reservas() {
         {ofertaAplicada === "Verano Refrescante" && form.fecha && (
           <div className={`px-4 py-3 mb-5 border text-xs ${
             loadingContador
-              ? "border-[#222] text-[#555]"
+              ? "border-[#222] text-[#999]"
               : contadorOferta?.agotado
               ? "border-red-900/40 bg-red-950/10 text-red-400"
               : (contadorOferta?.disponibles ?? 10) <= 3
@@ -750,9 +750,9 @@ export default function Reservas() {
           <div className="card-premium p-5 mb-6">
             <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Hora disponible</p>
             {loadingSlots ? (
-              <p className="text-[#444] text-sm text-center py-4">Consultando disponibilidad...</p>
+              <p className="text-[#888] text-sm text-center py-4">Consultando disponibilidad...</p>
             ) : slotsMostrar.length === 0 ? (
-              <p className="text-[#444] text-sm text-center py-4">
+              <p className="text-[#888] text-sm text-center py-4">
                 {franjaParam === "manana" && slots.length > 0
                   ? "No hay horarios de mañana disponibles este día. Prueba con otro."
                   : "Sin horarios disponibles este día. Prueba con otro."
@@ -768,7 +768,7 @@ export default function Reservas() {
                     className={`py-2 border text-xs text-center transition-all ${
                       form.hora === s
                         ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
-                        : "border-[#1f1f1f] text-[#666] hover:border-[#333]"
+                        : "border-[#1f1f1f] text-[#aaa] hover:border-[#333]"
                     }`}
                   >
                     {s}
@@ -824,7 +824,7 @@ export default function Reservas() {
             { label: "Hora",     value: form.hora },
           ].map((row) => (
             <div key={row.label} className="flex justify-between text-sm gap-4">
-              <span className="text-[#555] shrink-0">{row.label}</span>
+              <span className="text-[#999] shrink-0">{row.label}</span>
               <span className="text-white text-right">{row.value}</span>
             </div>
           ))}
@@ -898,7 +898,7 @@ export default function Reservas() {
             ¡Hasta <span className="gold-text">pronto</span>!
           </h2>
           <div className="divider-gold" />
-          <div className="text-sm text-[#666] space-y-1 mt-4 mb-8">
+          <div className="text-sm text-[#aaa] space-y-1 mt-4 mb-8">
             <p><span className="text-white">{form.nombre}</span></p>
             <p>{formatFecha(form.fecha)} a las {form.hora}</p>
             <p>{barberoSel?.nombre} · {sedeSel?.nombre}</p>
@@ -911,12 +911,12 @@ export default function Reservas() {
               </p>
             )}
           </div>
-          <p className="text-[#444] text-xs mb-8">
+          <p className="text-[#888] text-xs mb-8">
             Recibirás confirmación en <strong className="text-[#777]">{form.email}</strong>.
             Recuerda avisar con al menos 4 h si necesitas cancelar.
           </p>
           {citaId && (
-            <p className="text-[#333] text-[10px] font-mono mb-6">Ref: {citaId.slice(0, 8).toUpperCase()}</p>
+            <p className="text-[#777] text-[10px] font-mono mb-6">Ref: {citaId.slice(0, 8).toUpperCase()}</p>
           )}
           <a href="/" className="inline-flex btn-gold text-sm">
             Volver al inicio →

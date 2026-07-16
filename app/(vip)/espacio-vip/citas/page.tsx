@@ -66,7 +66,7 @@ export default async function MisCitasPage() {
           <p className="section-label mb-4">Próximas citas ({proximas.length})</p>
           {proximas.length === 0 ? (
             <div className="card-premium p-8 text-center">
-              <p className="text-[#444] text-sm mb-4">No tienes citas próximas.</p>
+              <p className="text-[#888] text-sm mb-4">No tienes citas próximas.</p>
               <Link href="/reservas" className="inline-flex btn-gold text-sm">
                 Reservar ahora →
               </Link>
@@ -84,7 +84,7 @@ export default async function MisCitasPage() {
         <div>
           <p className="section-label mb-4">Historial de visitas ({pasadas.length})</p>
           {pasadas.length === 0 ? (
-            <p className="text-[#444] text-sm text-center py-8">Aún no tienes visitas registradas.</p>
+            <p className="text-[#888] text-sm text-center py-8">Aún no tienes visitas registradas.</p>
           ) : (
             <div className="space-y-3">
               {pasadas.map((c: any) => (

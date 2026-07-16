@@ -47,7 +47,7 @@ export default function SellosVisuales({ sellos }: { sellos: number }) {
       </div>
 
       <div className="flex items-center justify-between mt-3">
-        <p className="text-[#555] text-xs">
+        <p className="text-[#999] text-xs">
           {filled}/10 sellos · {canCanjear ? "¡Corte gratis disponible!" : `${10 - filled} para el próximo corte gratis`}
         </p>
         {canCanjear && (

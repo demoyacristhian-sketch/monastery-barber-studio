@@ -78,9 +78,9 @@ function ServiceCard({ s, large }: { s: Servicio; large?: boolean }) {
         </h3>
         <span className="text-[#C9A84C] font-bold text-xl shrink-0">{s.precio}</span>
       </div>
-      <p className="text-[#555] text-sm leading-relaxed flex-1 mb-4">{s.descripcion}</p>
+      <p className="text-[#999] text-sm leading-relaxed flex-1 mb-4">{s.descripcion}</p>
       <div className="flex items-center justify-between mt-auto">
-        <span className="text-[#333] text-xs tracking-wider uppercase">{s.duracion}</span>
+        <span className="text-[#777] text-xs tracking-wider uppercase">{s.duracion}</span>
         <Link href={`/reservas?servicio=${encodeURIComponent(s.nombre)}`} className="text-[#C9A84C] text-xs hover:text-white transition-colors">
           Reservar →
         </Link>
@@ -101,7 +101,7 @@ export default function Servicios() {
             Nuestros <span className="gold-text">servicios</span>
           </h2>
           <div className="divider-gold" />
-          <p className="text-[#666] text-sm mt-4 max-w-md mx-auto">
+          <p className="text-[#aaa] text-sm mt-4 max-w-md mx-auto">
             Cada servicio ejecutado con precisión artesanal y productos premium
           </p>
         </div>

@@ -36,13 +36,13 @@ export default function EspacioVipPage() {
             Espacio <span className="gold-text">VIP</span>
           </h1>
 
-          <p className="text-[#444] text-xs tracking-[0.35em] uppercase mb-6">
+          <p className="text-[#888] text-xs tracking-[0.35em] uppercase mb-6">
             Members Only · Monastery Barber Studio
           </p>
 
           <div className="divider-gold" />
 
-          <p className="text-[#666] text-sm max-w-sm mx-auto mt-6">
+          <p className="text-[#aaa] text-sm max-w-sm mx-auto mt-6">
             Tu acceso exclusivo al mundo Monastery. Reservas rápidas, historial y beneficios pensados solo para los nuestros.
           </p>
         </div>

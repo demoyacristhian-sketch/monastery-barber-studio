@@ -36,13 +36,13 @@ export default function LaOrdenPage() {
             La <span className="gold-text">Orden</span>
           </h1>
 
-          <p className="text-[#444] text-xs tracking-[0.35em] uppercase mb-6">
+          <p className="text-[#888] text-xs tracking-[0.35em] uppercase mb-6">
             The Order · Monastery Barber Studio
           </p>
 
           <div className="divider-gold" />
 
-          <p className="text-[#666] text-sm max-w-sm mx-auto mt-6">
+          <p className="text-[#aaa] text-sm max-w-sm mx-auto mt-6">
             Tu acceso al círculo privado. Historial, reservas rápidas y beneficios exclusivos para los nuestros.
           </p>
         </div>

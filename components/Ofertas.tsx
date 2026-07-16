@@ -145,15 +145,15 @@ function GrupoOfertas({ titulo, icono, ofertas, color }: {
                 </span>
               </div>
 
-              <p className="text-[#555] text-sm leading-relaxed flex-1">{o.descripcion}</p>
+              <p className="text-[#999] text-sm leading-relaxed flex-1">{o.descripcion}</p>
 
               <div className="space-y-1 mt-auto">
-                <p className="text-[#333] text-xs flex items-center gap-1.5">
+                <p className="text-[#777] text-xs flex items-center gap-1.5">
                   <span style={{ color }}>◆</span>
                   {o.condicion}
                 </p>
                 {o.extra && (
-                  <p className="text-[#444] text-xs">{o.extra}</p>
+                  <p className="text-[#888] text-xs">{o.extra}</p>
                 )}
               </div>
 
@@ -184,7 +184,7 @@ export default function Ofertas() {
             Ofertas & <span className="gold-text">Promociones</span>
           </h2>
           <div className="divider-gold" />
-          <p className="text-[#666] text-sm mt-4 max-w-md mx-auto">
+          <p className="text-[#aaa] text-sm mt-4 max-w-md mx-auto">
             Más razones para visitarnos. Descuentos especiales por horario, temporada y fidelidad.
           </p>
         </div>
@@ -215,7 +215,7 @@ export default function Ofertas() {
         {/* CTA */}
         <div className="mt-16 text-center border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-8">
           <p className="text-[#888] text-sm mb-2">Promociones válidas de lunes a viernes. No aplicables en sábado.</p>
-          <p className="text-[#555] text-xs mb-6">Menciona la oferta al reservar o al llegar a tu cita.</p>
+          <p className="text-[#999] text-xs mb-6">Menciona la oferta al reservar o al llegar a tu cita.</p>
           <Link href="/reservas" className="inline-flex btn-gold">
             Reservar con promoción →
           </Link>

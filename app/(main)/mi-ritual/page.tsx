@@ -36,13 +36,13 @@ export default function MiRitualPage() {
             El <span className="gold-text">Sagrario</span>
           </h1>
 
-          <p className="text-[#444] text-xs tracking-[0.35em] uppercase mb-6">
+          <p className="text-[#888] text-xs tracking-[0.35em] uppercase mb-6">
             Sanctuary · Monastery Barber Studio
           </p>
 
           <div className="divider-gold" />
 
-          <p className="text-[#666] text-sm max-w-sm mx-auto mt-6">
+          <p className="text-[#aaa] text-sm max-w-sm mx-auto mt-6">
             Tu espacio reservado. Donde cada visita queda registrada y cada detalle define tu imagen.
           </p>
         </div>

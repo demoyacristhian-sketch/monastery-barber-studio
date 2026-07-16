@@ -27,7 +27,7 @@ const ESTADO_STYLES: Record<string, string> = {
   pendiente:  "text-amber-400 bg-amber-950/30 border-amber-900/40",
   confirmada: "text-blue-400 bg-blue-950/30 border-blue-900/40",
   completada: "text-emerald-400 bg-emerald-950/30 border-emerald-900/40",
-  cancelada:  "text-[#555] bg-[#111] border-[#1a1a1a]",
+  cancelada:  "text-[#999] bg-[#111] border-[#1a1a1a]",
   no_show:    "text-red-400 bg-red-950/30 border-red-900/40",
 };
 
@@ -78,7 +78,7 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
                 <span>{getOfertaTag(cita.notas_cliente)}</span>
               </p>
             )}
-            <p className="text-[#555] text-xs mt-0.5">
+            <p className="text-[#999] text-xs mt-0.5">
               {[cita.barberos?.nombre, cita.sedes?.nombre].filter(Boolean).join(" · ")}
             </p>
             {cita.precio_final != null && (
@@ -97,10 +97,10 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
             <p className="text-white text-sm font-medium">
               {fecha.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
             </p>
-            <p className="text-[#555] text-xs">
+            <p className="text-[#999] text-xs">
               {fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
             </p>
-            <span className={`text-[10px] px-2 py-0.5 mt-1.5 inline-block border ${ESTADO_STYLES[cita.estado] ?? "text-[#555]"}`}>
+            <span className={`text-[10px] px-2 py-0.5 mt-1.5 inline-block border ${ESTADO_STYLES[cita.estado] ?? "text-[#999]"}`}>
               {ESTADO_LABEL[cita.estado] ?? cita.estado}
             </span>
           </div>
@@ -123,7 +123,7 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
               <button
                 onClick={() => setModalReagendar(true)}
                 disabled={pending}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#111] text-[#555] border border-[#1a1a1a] hover:text-[#888] hover:border-[#333] transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[#111] text-[#999] border border-[#1a1a1a] hover:text-[#888] hover:border-[#333] transition-colors disabled:opacity-50"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Reagendar
@@ -146,14 +146,14 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
           <div className="bg-[#050505] border border-[#1a1a1a] w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-serif font-bold text-lg">Solicitar reagendamiento</h3>
-              <button onClick={() => setModalReagendar(false)} className="text-[#555] hover:text-white">
+              <button onClick={() => setModalReagendar(false)} className="text-[#999] hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-[#555] text-xs mb-4">
+            <p className="text-[#999] text-xs mb-4">
               El equipo de Monastery recibirá tu solicitud y te contactará para buscar una nueva fecha.
             </p>
-            <label className="block text-[#666] text-xs mb-1.5 uppercase tracking-wider">
+            <label className="block text-[#aaa] text-xs mb-1.5 uppercase tracking-wider">
               Motivo (opcional)
             </label>
             <textarea
@@ -161,7 +161,7 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
               onChange={e => setMotivo(e.target.value)}
               placeholder="Ej: No puedo acudir por motivos de trabajo..."
               rows={3}
-              className="w-full bg-[#0a0a0a] border border-[#222] text-white text-sm px-3 py-2 resize-none outline-none focus:border-[#C9A84C]/40 placeholder:text-[#333]"
+              className="w-full bg-[#0a0a0a] border border-[#222] text-white text-sm px-3 py-2 resize-none outline-none focus:border-[#C9A84C]/40 placeholder:text-[#777]"
             />
             <div className="flex gap-2 mt-4">
               <button
@@ -173,7 +173,7 @@ export default function CitaCardCliente({ cita, pasada = false }: { cita: Cita; 
               </button>
               <button
                 onClick={() => setModalReagendar(false)}
-                className="px-4 text-xs text-[#555] border border-[#1a1a1a] hover:text-white transition-colors"
+                className="px-4 text-xs text-[#999] border border-[#1a1a1a] hover:text-white transition-colors"
               >
                 Cancelar
               </button>

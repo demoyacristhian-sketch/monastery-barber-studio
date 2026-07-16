@@ -82,20 +82,20 @@ export default function PrivacidadPage() {
             Política de <span className="gold-text">Privacidad y Cookies</span>
           </h1>
           <div className="divider-gold" />
-          <p className="text-[#444] text-xs mt-4">Última actualización: julio de 2026</p>
+          <p className="text-[#888] text-xs mt-4">Última actualización: julio de 2026</p>
         </div>
 
         <div className="space-y-8">
           {SECCIONES.map((s) => (
             <div key={s.titulo} className="border-l border-[#C9A84C]/20 pl-6">
               <h2 className="font-serif text-lg font-bold text-white mb-3">{s.titulo}</h2>
-              <p className="text-[#666] text-sm leading-relaxed whitespace-pre-line">{s.contenido}</p>
+              <p className="text-[#aaa] text-sm leading-relaxed whitespace-pre-line">{s.contenido}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-14 pt-8 border-t border-[#111] text-center">
-          <p className="text-[#333] text-xs">
+          <p className="text-[#777] text-xs">
             Monastery Barber Studio · Valladolid · España
           </p>
           <p className="text-[#222] text-xs mt-1">

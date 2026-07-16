@@ -39,7 +39,7 @@ export default function VipNav({ nombre }: { nombre: string }) {
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs tracking-wide whitespace-nowrap transition-all rounded-sm ${
                   activo
                     ? "text-[#C9A84C] border-b-2 border-[#C9A84C] -mb-px font-medium"
-                    : "text-[#555] hover:text-[#888]"
+                    : "text-[#999] hover:text-[#888]"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -49,10 +49,10 @@ export default function VipNav({ nombre }: { nombre: string }) {
           })}
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
-          <span className="text-[#444] text-xs truncate max-w-[140px]">{nombre}</span>
+          <span className="text-[#888] text-xs truncate max-w-[140px]">{nombre}</span>
           <button
             onClick={cerrarSesion}
-            className="flex items-center gap-1 text-[#444] hover:text-red-400 transition-colors text-xs"
+            className="flex items-center gap-1 text-[#888] hover:text-red-400 transition-colors text-xs"
             title="Cerrar sesión"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -75,7 +75,7 @@ export default function VipNav({ nombre }: { nombre: string }) {
         />
         <button
           onClick={cerrarSesion}
-          className="text-[#444] hover:text-red-400 transition-colors p-1"
+          className="text-[#888] hover:text-red-400 transition-colors p-1"
           aria-label="Cerrar sesión"
         >
           <LogOut className="w-4 h-4" />

@@ -198,13 +198,13 @@ function OfertaCard({ o }: { o: OfertaItem }) {
         </div>
       )}
       {!activa && o.meses && (
-        <div className="absolute top-3 right-3 text-[9px] px-1.5 py-0.5 bg-[#333] text-[#666] font-medium tracking-wider">
+        <div className="absolute top-3 right-3 text-[9px] px-1.5 py-0.5 bg-[#333] text-[#aaa] font-medium tracking-wider">
           Solo en {o.meses.split(",").map(m => ["","ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][parseInt(m)]??m).join(", ")}
         </div>
       )}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[#555] text-[10px] tracking-widest uppercase mb-0.5">{o.tag}</p>
+          <p className="text-[#999] text-[10px] tracking-widest uppercase mb-0.5">{o.tag}</p>
           <h3 className="font-serif font-bold text-white text-base leading-tight">{o.titulo}</h3>
         </div>
         <span
@@ -215,25 +215,25 @@ function OfertaCard({ o }: { o: OfertaItem }) {
         </span>
       </div>
 
-      <p className="text-[#555] text-sm leading-relaxed flex-1">{o.desc}</p>
+      <p className="text-[#999] text-sm leading-relaxed flex-1">{o.desc}</p>
 
       {/* Precio */}
       {o.precioOferta && (
         <div className="flex items-baseline gap-2">
           <span className="text-[#C9A84C] font-bold">{o.precioOferta} €</span>
           {o.precioOriginal && (
-            <span className="text-[#444] text-xs line-through">{o.precioOriginal} €</span>
+            <span className="text-[#888] text-xs line-through">{o.precioOriginal} €</span>
           )}
         </div>
       )}
 
       <div className="space-y-0.5 mt-auto">
-        <p className="text-[#333] text-xs flex items-center gap-1.5">
+        <p className="text-[#777] text-xs flex items-center gap-1.5">
           <span style={{ color: o.color }}>◆</span>
           {o.condicion}
         </p>
         {o.extra && (
-          <p className="text-[#444] text-xs pl-4">Incluye: {o.extra}</p>
+          <p className="text-[#888] text-xs pl-4">Incluye: {o.extra}</p>
         )}
       </div>
 
@@ -246,7 +246,7 @@ function OfertaCard({ o }: { o: OfertaItem }) {
           Reservar esta oferta →
         </Link>
       ) : (
-        <span className="text-xs mt-1 text-[#333] cursor-not-allowed">
+        <span className="text-xs mt-1 text-[#777] cursor-not-allowed">
           No disponible en este periodo
         </span>
       )}
@@ -270,7 +270,7 @@ export default async function OfertasVipPage() {
             Ofertas <span className="gold-text">& Promociones</span>
           </h1>
           <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
-          <p className="text-[#555] text-sm mt-3">
+          <p className="text-[#999] text-sm mt-3">
             Precios especiales, extras incluidos y descuentos exclusivos disponibles ahora mismo.
             Haz clic en cualquier oferta para reservar con el precio ya aplicado.
           </p>
@@ -304,7 +304,7 @@ export default async function OfertasVipPage() {
 
         {/* Nota */}
         <div className="border border-[#111] bg-[#050505] p-6 text-center">
-          <p className="text-[#444] text-xs">
+          <p className="text-[#888] text-xs">
             Promociones válidas de lunes a viernes. No aplicables en sábado. Al seleccionar una oferta,
             el precio especial se aplica automáticamente en tu reserva.
           </p>

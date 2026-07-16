@@ -72,7 +72,7 @@ export default function Politica() {
           </div>
         </div>
 
-        <p className="text-center text-[#444] text-xs mt-8">
+        <p className="text-center text-[#888] text-xs mt-8">
           Para cualquier duda sobre pagos o cancelaciones, escríbenos a{" "}
           <a href="https://instagram.com/monasterybarberia" className="text-[#C9A84C] hover:underline">
             @monasterybarberia

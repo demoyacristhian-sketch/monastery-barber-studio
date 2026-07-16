@@ -33,7 +33,7 @@ export default function LoginPage({
           <h1 className="font-serif text-4xl font-black">
             <span className="gold-text">Monastery</span>
           </h1>
-          <p className="text-[#555] text-xs tracking-widest uppercase mt-1">
+          <p className="text-[#999] text-xs tracking-widest uppercase mt-1">
             Barber Studio · Valladolid
           </p>
         </div>

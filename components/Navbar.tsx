@@ -65,7 +65,7 @@ export default function Navbar() {
             href="/admin-login"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[#2a2a2a] text-[#555] hover:text-[#888] hover:border-[#383838] transition-all duration-200 group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-[#2a2a2a] text-[#999] hover:text-[#888] hover:border-[#383838] transition-all duration-200 group"
             title="Acceso al panel de administración"
             style={{ fontSize: "0.65rem", letterSpacing: "0.1em", textTransform: "uppercase" }}
           >
@@ -123,7 +123,7 @@ export default function Navbar() {
             href="/admin-login"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 py-2.5 border border-[#1e1e1e] text-[#444] hover:text-[#666] transition-colors rounded"
+            className="flex items-center justify-center gap-2 py-2.5 border border-[#1e1e1e] text-[#888] hover:text-[#aaa] transition-colors rounded"
             onClick={() => setOpen(false)}
             style={{ fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase" }}
           >

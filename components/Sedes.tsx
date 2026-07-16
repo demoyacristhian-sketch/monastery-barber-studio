@@ -134,7 +134,7 @@ export default function Sedes() {
             Nuestras <span className="gold-text">sedes</span>
           </h2>
           <div className="divider-gold" />
-          <p className="text-[#666] text-sm mt-4">Dos ubicaciones premium en el corazón de Valladolid</p>
+          <p className="text-[#aaa] text-sm mt-4">Dos ubicaciones premium en el corazón de Valladolid</p>
         </div>
 
         {/* Galería con scroll horizontal */}
@@ -163,7 +163,7 @@ export default function Sedes() {
                     <span className="text-[#C9A84C] text-lg mt-0.5">📍</span>
                     <div>
                       <p className="text-white font-medium">{sede.direccion}</p>
-                      <p className="text-[#666] text-sm">{sede.ciudad}</p>
+                      <p className="text-[#aaa] text-sm">{sede.ciudad}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

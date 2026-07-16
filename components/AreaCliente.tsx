@@ -109,7 +109,7 @@ function AreaClientePublica() {
             Área <span className="gold-text">cliente</span>
           </h2>
           <div className="divider-gold" />
-          <p className="text-[#666] text-sm mt-4 max-w-md mx-auto">
+          <p className="text-[#aaa] text-sm mt-4 max-w-md mx-auto">
             Crea tu cuenta y accede a una experiencia personalizada y exclusiva
           </p>
         </div>
@@ -118,7 +118,7 @@ function AreaClientePublica() {
             <div key={f.title} className="card-premium p-6">
               <div className="text-3xl mb-4">{f.icon}</div>
               <h3 className="font-semibold text-white mb-2">{f.title}</h3>
-              <p className="text-[#666] text-sm leading-relaxed">{f.desc}</p>
+              <p className="text-[#aaa] text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -126,7 +126,7 @@ function AreaClientePublica() {
           <h3 className="font-serif text-2xl font-bold mb-3">
             Tu imagen merece una <span className="gold-text">experiencia premium</span>
           </h3>
-          <p className="text-[#666] text-sm mb-8 max-w-md mx-auto">
+          <p className="text-[#aaa] text-sm mb-8 max-w-md mx-auto">
             Crea tu cuenta gratuita y accede a tu espacio privado en Monastery.
           </p>
           <Link href="/login" className="inline-flex btn-gold">
@@ -146,9 +146,9 @@ function AreaClienteNuevo({ email }: { email: string }) {
         <div className="border border-[#C9A84C]/20 p-10">
           <div className="text-4xl mb-4">✦</div>
           <h2 className="font-serif text-2xl font-bold mb-2">Bienvenido</h2>
-          <p className="text-[#555] text-sm mb-1">{email}</p>
+          <p className="text-[#999] text-sm mb-1">{email}</p>
           <div className="divider-gold" />
-          <p className="text-[#666] text-sm mt-4 mb-8">
+          <p className="text-[#aaa] text-sm mt-4 mb-8">
             Reserva tu primera cita para activar tu perfil completo en el Espacio VIP.
           </p>
           <Link href="/reservas" className="inline-flex btn-gold">
@@ -210,7 +210,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
           ].map(s => (
             <div key={s.label} className="card-premium p-5 text-center">
               <p className="text-2xl font-bold mb-1" style={{ color: s.color ?? "#fff" }}>{s.value}</p>
-              <p className="text-[#555] text-xs tracking-widest uppercase">{s.label}</p>
+              <p className="text-[#999] text-xs tracking-widest uppercase">{s.label}</p>
             </div>
           ))}
         </div>
@@ -224,7 +224,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
                 La Orden · {nivel}
               </p>
               {descuento && (
-                <p className="text-[#666] text-xs mt-0.5">{descuento}% de descuento en todos los servicios</p>
+                <p className="text-[#aaa] text-xs mt-0.5">{descuento}% de descuento en todos los servicios</p>
               )}
             </div>
             <Link href="/espacio-vip/beneficios" className="btn-outline text-xs inline-flex shrink-0">
@@ -237,7 +237,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
         <div className="card-premium p-6">
           <div className="flex items-center justify-between mb-5">
             <p className="section-label">Mis sellos de fidelidad</p>
-            <span className="text-[#333] text-xs">Solo tu barbero puede añadirlos</span>
+            <span className="text-[#777] text-xs">Solo tu barbero puede añadirlos</span>
           </div>
           <SellosVisuales sellos={sellos} />
         </div>
@@ -258,7 +258,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
 
           {proximas.length === 0 ? (
             <div className="card-premium p-8 text-center">
-              <p className="text-[#444] text-sm mb-4">No tienes citas próximas.</p>
+              <p className="text-[#888] text-sm mb-4">No tienes citas próximas.</p>
               <Link href="/reservas" className="inline-flex btn-gold text-sm">
                 Reservar ahora →
               </Link>
@@ -269,7 +269,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
                 <CitaCardCliente key={cita.id} cita={cita} />
               ))}
               {proximas.length > 3 && (
-                <Link href="/espacio-vip/citas" className="flex items-center justify-center gap-1.5 text-[#555] text-xs py-3 border border-[#111] hover:text-[#888] transition-colors">
+                <Link href="/espacio-vip/citas" className="flex items-center justify-center gap-1.5 text-[#999] text-xs py-3 border border-[#111] hover:text-[#888] transition-colors">
                   Ver {proximas.length - 3} citas más <ChevronRight className="w-3 h-3" />
                 </Link>
               )}
@@ -300,17 +300,17 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
             <Zap className="w-5 h-5 text-[#C9A84C] shrink-0" />
             <div>
               <p className="text-white text-sm font-medium">Ofertas VIP</p>
-              <p className="text-[#444] text-xs">Descuentos exclusivos</p>
+              <p className="text-[#888] text-xs">Descuentos exclusivos</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#333] ml-auto group-hover:text-[#C9A84C] transition-colors" />
+            <ChevronRight className="w-4 h-4 text-[#777] ml-auto group-hover:text-[#C9A84C] transition-colors" />
           </Link>
           <Link href="/espacio-vip/perfil" className="card-premium p-5 flex items-center gap-3 group hover:border-[#C9A84C]/30 transition-colors">
             <span className="text-xl shrink-0">✦</span>
             <div>
               <p className="text-white text-sm font-medium">Mi perfil</p>
-              <p className="text-[#444] text-xs">Editar mis datos</p>
+              <p className="text-[#888] text-xs">Editar mis datos</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#333] ml-auto group-hover:text-[#C9A84C] transition-colors" />
+            <ChevronRight className="w-4 h-4 text-[#777] ml-auto group-hover:text-[#C9A84C] transition-colors" />
           </Link>
           <Link href="/reservas" className="btn-gold flex items-center justify-center text-sm py-4">
             + Nueva reserva

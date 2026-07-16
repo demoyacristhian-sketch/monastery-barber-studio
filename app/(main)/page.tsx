@@ -83,7 +83,7 @@ export default function Home() {
           ].map((s) => (
             <div key={s.label}>
               <p className="font-serif text-3xl sm:text-4xl font-black gold-text mb-1">{s.num}</p>
-              <p className="text-[#555] text-xs tracking-wider uppercase">{s.label}</p>
+              <p className="text-[#999] text-xs tracking-wider uppercase">{s.label}</p>
             </div>
           ))}
         </div>
@@ -106,7 +106,7 @@ export default function Home() {
                 <div className="mb-5">{s.icono}</div>
                 <h3 className="font-serif text-xl font-bold mb-2 text-white">{s.categoria}</h3>
                 <div className="w-8 h-0.5 bg-[#C9A84C] mb-4" />
-                <p className="text-[#666] text-sm leading-relaxed mb-6">{s.desc}</p>
+                <p className="text-[#aaa] text-sm leading-relaxed mb-6">{s.desc}</p>
                 <Link
                   href={s.link}
                   className="text-[#C9A84C] text-xs tracking-widest uppercase hover:text-white transition-colors"
@@ -134,7 +134,7 @@ export default function Home() {
               Membresías <span className="gold-text">exclusivas</span>
             </h2>
             <div className="divider-gold" />
-            <p className="text-[#555] text-sm mt-4 max-w-md mx-auto">
+            <p className="text-[#999] text-sm mt-4 max-w-md mx-auto">
               Hazte miembro y disfruta de cortes ilimitados, prioridad de agenda y acceso a beneficios únicos.
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function Home() {
                 <p className="text-white text-xl font-semibold mb-5">{p.precio}</p>
                 <ul className="space-y-2 flex-1">
                   {p.beneficios.map((b) => (
-                    <li key={b} className="text-[#555] text-sm flex items-start gap-2">
+                    <li key={b} className="text-[#999] text-sm flex items-start gap-2">
                       <span className="mt-0.5 shrink-0" style={{ color: p.color }}>·</span>
                       {b}
                     </li>
@@ -185,7 +185,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-10 space-y-3">
-            <p className="text-[#444] text-xs">Habla con tu barbero para activar tu membresía.</p>
+            <p className="text-[#888] text-xs">Habla con tu barbero para activar tu membresía.</p>
             <Link href="/la-orden" className="inline-flex btn-gold">
               Conocer todos los beneficios →
             </Link>
@@ -238,7 +238,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-10">
-            <Link href="/sedes" className="text-[#555] text-xs tracking-widest uppercase hover:text-[#C9A84C] transition-colors">
+            <Link href="/sedes" className="text-[#999] text-xs tracking-widest uppercase hover:text-[#C9A84C] transition-colors">
               Ver información completa de sedes →
             </Link>
           </div>
@@ -248,7 +248,7 @@ export default function Home() {
       {/* ── Quote ── */}
       <div className="py-20 px-6 bg-black text-center">
         <div className="gold-line mb-10 max-w-xs mx-auto" />
-        <p className="font-serif text-2xl md:text-3xl text-[#666] italic max-w-2xl mx-auto">
+        <p className="font-serif text-2xl md:text-3xl text-[#aaa] italic max-w-2xl mx-auto">
           &ldquo;Monastery no es solo una barbería.
           <br />
           <span className="text-white">Es tu nuevo estándar.&rdquo;</span>

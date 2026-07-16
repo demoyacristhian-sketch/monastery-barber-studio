@@ -35,25 +35,57 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
   let clienteId: string;
 
   if (user) {
-    const { data: existingRaw } = await admin
+    // Buscar por auth_user_id primero
+    const { data: porAuthRaw } = await admin
       .from("clientes")
       .select("*")
       .eq("auth_user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    const existing = existingRaw as Cliente | null;
+    const porAuth = porAuthRaw as Cliente | null;
 
-    if (existing) {
-      clienteId = existing.id;
+    if (porAuth) {
+      clienteId = porAuth.id;
+      // Actualizar datos del perfil con lo que el cliente ha rellenado en el formulario
+      await (admin.from("clientes") as any)
+        .update({
+          nombre:           input.nombre,
+          telefono:         input.movil,
+          fecha_nacimiento: input.fecha_nacimiento || null,
+        })
+        .eq("id", clienteId);
     } else {
-      const { data: nuevoRaw, error } = await admin
+      // Sin registro por auth_user_id: buscar por email (reservó sin auth en el pasado)
+      const { data: porEmailRaw } = await admin
         .from("clientes")
-        .insert({ auth_user_id: user.id, nombre: input.nombre, email: input.email, telefono: input.movil, fecha_nacimiento: input.fecha_nacimiento || null, activo: true } as any)
         .select("*")
-        .single();
-      const nuevo = nuevoRaw as Cliente | null;
-      if (error || !nuevo) return { ok: false, error: `Error al crear tu perfil: ${error?.message ?? "sin respuesta"}` };
-      clienteId = nuevo.id;
+        .eq("email", input.email)
+        .maybeSingle();
+
+      const porEmail = porEmailRaw as Cliente | null;
+
+      if (porEmail) {
+        clienteId = porEmail.id;
+        // Vincular auth_user_id y actualizar datos
+        await (admin.from("clientes") as any)
+          .update({
+            auth_user_id:     user.id,
+            nombre:           input.nombre,
+            telefono:         input.movil,
+            fecha_nacimiento: input.fecha_nacimiento || null,
+          })
+          .eq("id", clienteId);
+      } else {
+        // Cliente completamente nuevo
+        const { data: nuevoRaw, error } = await admin
+          .from("clientes")
+          .insert({ auth_user_id: user.id, nombre: input.nombre, email: input.email, telefono: input.movil, fecha_nacimiento: input.fecha_nacimiento || null, activo: true } as any)
+          .select("*")
+          .single();
+        const nuevo = nuevoRaw as Cliente | null;
+        if (error || !nuevo) return { ok: false, error: `Error al crear tu perfil: ${error?.message ?? "sin respuesta"}` };
+        clienteId = nuevo.id;
+      }
     }
   } else {
     const { data: existingRaw } = await admin
@@ -65,6 +97,14 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
 
     if (existing) {
       clienteId = existing.id;
+      // Actualizar datos en caso de que hayan cambiado
+      await (admin.from("clientes") as any)
+        .update({
+          nombre:           input.nombre,
+          telefono:         input.movil,
+          fecha_nacimiento: input.fecha_nacimiento || null,
+        })
+        .eq("id", clienteId);
     } else {
       const { data: nuevoRaw, error } = await admin
         .from("clientes")
