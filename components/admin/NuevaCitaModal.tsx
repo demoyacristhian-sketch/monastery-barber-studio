@@ -7,6 +7,7 @@ import {
   buscarClientes,
   crearCitaConCliente,
 } from "@/app/actions/admin";
+import { esFestivoNacional } from "@/lib/festivos";
 
 const INPUT =
   "w-full px-3.5 py-2.5 text-sm border border-zinc-200 rounded-xl bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-100 transition-all";
@@ -177,9 +178,10 @@ export default function NuevaCitaModal({
   if (!abierto) return null;
 
   const hoy = new Date().toISOString().slice(0, 10);
-  const esDomingo = form.fecha
-    ? new Date(form.fecha + "T12:00:00").getDay() === 0
-    : false;
+  const esDomingo  = form.fecha ? new Date(form.fecha + "T12:00:00").getDay() === 0 : false;
+  const esFestivo  = form.fecha ? esFestivoNacional(form.fecha) : false;
+  const esSabado   = form.fecha ? new Date(form.fecha + "T12:00:00").getDay() === 6 : false;
+  const diaCerrado = esDomingo || esFestivo;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -296,8 +298,10 @@ export default function NuevaCitaModal({
               <div>
                 <label className={LABEL}>Fecha</label>
                 <input type="date" value={form.fecha} min={hoy} onChange={set("fecha")} required className={INPUT} />
-                {esDomingo && (
-                  <p className="text-xs text-amber-600 mt-1.5">⚠️ Los domingos estamos cerrados. Elige otro día.</p>
+                {diaCerrado && (
+                  <p className="text-xs text-amber-600 mt-1.5">
+                    ⚠️ {esDomingo ? "Los domingos estamos cerrados." : "Este día es festivo nacional."} Elige otro día.
+                  </p>
                 )}
               </div>
 
@@ -305,9 +309,9 @@ export default function NuevaCitaModal({
               <div>
                 <label className={LABEL}>
                   Hora disponible
-                  {form.barberoId && form.fecha && !esDomingo && (
+                  {form.barberoId && form.fecha && !diaCerrado && (
                     <span className="text-zinc-400 ml-1 normal-case font-normal">
-                      · Horario 09:00-14:00 y 16:00-21:00
+                      · Horario {esSabado ? "10:00-17:00" : "10:00-14:00 y 16:00-20:00"}
                     </span>
                   )}
                 </label>
@@ -316,10 +320,10 @@ export default function NuevaCitaModal({
                     <Clock className="w-4 h-4" />
                     Selecciona barbero y fecha primero
                   </div>
-                ) : esDomingo ? (
+                ) : diaCerrado ? (
                   <div className="flex items-center gap-2 px-3.5 py-2.5 border border-amber-200 rounded-xl bg-amber-50 text-amber-600 text-sm">
                     <Clock className="w-4 h-4" />
-                    Domingo — cerrado
+                    {esDomingo ? "Domingo" : "Festivo nacional"} — cerrado
                   </div>
                 ) : cargandoSlots ? (
                   <div className="flex items-center gap-2 px-3.5 py-2.5 border border-zinc-200 rounded-xl bg-zinc-50 text-zinc-400 text-sm">

@@ -1,17 +1,19 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
+import { esFestivoNacional } from "@/lib/festivos";
 
 export const dynamic = "force-dynamic";
 
 const SPAIN_TZ = "Europe/Madrid";
 
-// Slots fijos: 09:00-14:00 y 16:00-21:00 en intervalos de 45 min
-function generarTodosLosSlots(): string[] {
+// Slots según día de semana:
+//   Sábado (6): 10:00-17:00 continuo
+//   Lun-Vie:    10:00-14:00 y 16:00-20:00
+function generarSlots(diaSemana: number): string[] {
   const slots: string[] = [];
-  const periodos = [
-    { inicio: 9 * 60, fin: 14 * 60 },
-    { inicio: 16 * 60, fin: 21 * 60 },
-  ];
+  const periodos = diaSemana === 6
+    ? [{ inicio: 10 * 60, fin: 17 * 60 }]
+    : [{ inicio: 10 * 60, fin: 14 * 60 }, { inicio: 16 * 60, fin: 20 * 60 }];
   for (const { inicio, fin } of periodos) {
     let cur = inicio;
     while (cur + 45 <= fin) {
@@ -50,13 +52,38 @@ export async function GET(request: Request) {
 
   if (!barberoId || !fecha) return NextResponse.json({ slots: [] });
 
-  // Lunes=1 … Sábado=6 → laborable; Domingo=0 → cerrado
+  // Domingo (0) o festivo nacional → cerrado
   const jsDay = new Date(fecha + "T12:00:00").getDay();
   if (jsDay === 0) return NextResponse.json({ slots: [] });
+  if (esFestivoNacional(fecha)) return NextResponse.json({ slots: [] });
 
-  const todosLosSlots = generarTodosLosSlots();
+  const todosLosSlots = generarSlots(jsDay);
 
   const admin = createAdminClient();
+
+  // Comprobar bloqueos de agenda activos para este barbero en esta fecha
+  const fechaInicioDia = `${fecha}T00:00:00`;
+  const fechaFinDia    = `${fecha}T23:59:59`;
+
+  const { data: bloqueosRaw } = await (admin.from("bloqueos_agenda") as any)
+    .select("fecha_inicio, fecha_fin")
+    .lte("fecha_inicio", fechaFinDia)
+    .gte("fecha_fin",    fechaInicioDia)
+    .or(`barbero_id.eq.${barberoId},barbero_id.is.null`);
+
+  // Calcular las franjas bloqueadas para este día concreto
+  const franjasBloqueadas: { inicio: number; fin: number }[] = [];
+  for (const b of (bloqueosRaw ?? []) as { fecha_inicio: string; fecha_fin: string }[]) {
+    // Si el bloqueo empieza antes de este día → bloquear desde medianoche
+    const inicioMin = b.fecha_inicio.slice(0, 10) === fecha
+      ? parseInt(b.fecha_inicio.slice(11, 13)) * 60 + parseInt(b.fecha_inicio.slice(14, 16))
+      : 0;
+    // Si el bloqueo termina después de este día → bloquear hasta medianoche
+    const finMin = b.fecha_fin.slice(0, 10) === fecha
+      ? parseInt(b.fecha_fin.slice(11, 13)) * 60 + parseInt(b.fecha_fin.slice(14, 16))
+      : 24 * 60;
+    franjasBloqueadas.push({ inicio: inicioMin, fin: finMin });
+  }
 
   // Citas del barbero en la fecha seleccionada (± 1 día en UTC para cubrir desfases)
   const { data: citasRaw } = await (admin.from("citas") as any)
@@ -93,10 +120,12 @@ export async function GET(request: Request) {
 
   const disponibles = todosLosSlots.filter(slot => {
     if (ocupados.has(slot)) return false;
+    const [sh, sm] = slot.split(":").map(Number);
+    const slotMin  = sh * 60 + sm;
+    // Eliminar slots dentro de cualquier franja bloqueada
+    if (franjasBloqueadas.some(f => slotMin >= f.inicio && slotMin < f.fin)) return false;
     if (fecha === fechaHoyEnEspana) {
-      const [sh, sm] = slot.split(":").map(Number);
-      const slotMin  = sh * 60 + sm;
-      if (slotMin <= ahoraMin + 60) return false; // al menos 1h en el futuro
+      if (slotMin <= ahoraMin + 30) return false; // al menos 30 min en el futuro
     }
     return true;
   });

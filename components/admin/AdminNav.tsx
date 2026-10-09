@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Calendar, Users, Megaphone, Star,
   DollarSign, UserCog, Package, Settings, ExternalLink,
-  Menu, X, LogOut, Palette, ArrowRight,
+  Menu, X, LogOut, Palette, ArrowRight, CalendarOff,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase-browser";
 import { TEMAS, useTema } from "./AdminTheme";
@@ -21,6 +21,7 @@ const navMain = [
   { label: "Finanzas",     href: "/admin/finanzas",    icon: DollarSign      },
   { label: "Equipo",       href: "/admin/equipo",      icon: UserCog         },
   { label: "Inventario",   href: "/admin/inventario",  icon: Package         },
+  { label: "Bloqueos",     href: "/admin/bloqueos",    icon: CalendarOff     },
 ];
 
 const navSecundario = [

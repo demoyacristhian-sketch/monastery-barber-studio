@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const WA_URL = "https://wa.me/34642861499";
+const WA_MENSAJE = encodeURIComponent(
+  "Hola, me encuentro en vuestra web y me gustaría reservar una cita en Monastery Barber Studio. ¿Podéis ayudarme?"
+);
+const WA_URL = `https://wa.me/34642861499?text=${WA_MENSAJE}`;
 
 export default function Footer() {
   return (

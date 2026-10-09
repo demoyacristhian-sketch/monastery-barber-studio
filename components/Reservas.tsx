@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
 import { createReserva } from "@/app/actions/reservas";
+import { esFestivoNacional } from "@/lib/festivos";
 
 // ── Tipos ─────────────────────────────────────────────────────
 type Sede     = { id: string; nombre: string; direccion?: string; orden?: number };
@@ -46,11 +47,12 @@ function formatFecha(iso: string) {
 function diasDisponibles(dias = 21): { iso: string; label: string; dia: number }[] {
   const result = [];
   const hoy = new Date();
-  for (let i = 1; i <= dias + 7 && result.length < dias; i++) {
+  for (let i = 0; i <= dias + 7 && result.length < dias; i++) {
     const d = new Date(hoy);
     d.setDate(hoy.getDate() + i);
     if (d.getDay() === 0) continue; // sin domingos
     const iso = d.toISOString().slice(0, 10);
+    if (esFestivoNacional(iso)) continue; // sin festivos nacionales
     const label = d.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" });
     result.push({ iso, label, dia: d.getDay() });
   }
@@ -79,8 +81,6 @@ export default function Reservas() {
   const [ofertaAplicada, setOfertaAplicada] = useState<string | null>(null);
   const [precioOferta,   setPrecioOferta]   = useState<number | null>(null);
   const [extraOferta,    setExtraOferta]    = useState<string | null>(null);
-  const [contadorOferta, setContadorOferta] = useState<{ ocupadas: number; disponibles: number; agotado: boolean } | null>(null);
-  const [loadingContador, setLoadingContador] = useState(false);
   // Servicio exclusivo/virtual (no existe en la BD de servicios generales)
   const [servicioPreselect, setServicioPreselect] = useState<{ nombre: string; precio: number } | null>(null);
   const [cargandoPerfil,   setCargandoPerfil]   = useState(true);
@@ -184,24 +184,6 @@ export default function Reservas() {
       setSlots(s ?? []);
     } finally {
       setLoadingSlots(false);
-    }
-  }, []);
-
-  // Cargar contador de plazas para ofertas con límite (ej: Verano Refrescante)
-  const cargarContador = useCallback(async (oferta: string, fecha: string) => {
-    if (!oferta || !fecha) return;
-    setLoadingContador(true);
-    setContadorOferta(null);
-    try {
-      const res = await fetch(
-        `/api/reservas/oferta-contador?fecha=${fecha}&oferta=${encodeURIComponent(oferta)}`
-      );
-      const data = await res.json();
-      setContadorOferta(data);
-    } catch {
-      setContadorOferta(null);
-    } finally {
-      setLoadingContador(false);
     }
   }, []);
 
@@ -658,7 +640,7 @@ export default function Reservas() {
             {franjaParam === "manana" && (
               <p className="text-xs text-[#888] flex items-center gap-1.5">
                 <span className="text-[#C9A84C]">◆</span>
-                Esta oferta aplica solo en horario de mañana (09:00–14:00)
+                Esta oferta aplica solo en horario de mañana (10:00–14:00)
               </p>
             )}
             {mesesParam && (
@@ -701,9 +683,6 @@ export default function Reservas() {
                     set("fecha", d.iso);
                     set("hora", "");
                     cargarSlots(form.barbero_id, d.iso);
-                    if (ofertaAplicada === "Verano Refrescante") {
-                      cargarContador("Verano Refrescante", d.iso);
-                    }
                   }}
                   className={`shrink-0 px-3 py-2 border text-xs text-center transition-all min-w-[72px] ${
                     form.fecha === d.iso
@@ -718,32 +697,6 @@ export default function Reservas() {
           )}
           {errors.fecha && <p className="text-red-500 text-xs mt-2">{errors.fecha}</p>}
         </div>
-
-        {/* Contador de plazas para Verano Refrescante */}
-        {ofertaAplicada === "Verano Refrescante" && form.fecha && (
-          <div className={`px-4 py-3 mb-5 border text-xs ${
-            loadingContador
-              ? "border-[#222] text-[#999]"
-              : contadorOferta?.agotado
-              ? "border-red-900/40 bg-red-950/10 text-red-400"
-              : (contadorOferta?.disponibles ?? 10) <= 3
-              ? "border-amber-900/40 bg-amber-950/10 text-amber-400"
-              : "border-emerald-900/30 bg-emerald-950/10 text-emerald-400"
-          }`}>
-            {loadingContador ? (
-              <span>Consultando plazas disponibles...</span>
-            ) : contadorOferta?.agotado ? (
-              <span>✗ Las 10 plazas de Verano Refrescante para este día están agotadas. Elige otro día.</span>
-            ) : contadorOferta ? (
-              <span>
-                {contadorOferta.disponibles <= 3
-                  ? `⚡ ¡Solo quedan ${contadorOferta.disponibles} de 10 plazas para este día!`
-                  : `✓ Quedan ${contadorOferta.disponibles} de 10 plazas — Verano Refrescante`
-                }
-              </span>
-            ) : null}
-          </div>
-        )}
 
         {/* Slots */}
         {form.fecha && (
@@ -786,8 +739,7 @@ export default function Reservas() {
           </button>
           <button
             onClick={() => validarFecha() && setStep("confirmar")}
-            disabled={contadorOferta?.agotado === true}
-            className="btn-gold flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-gold flex-1 justify-center"
           >
             Siguiente: confirmar →
           </button>

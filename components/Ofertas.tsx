@@ -15,14 +15,14 @@ const OFERTAS_MANANA: Oferta[] = [
     nombre: "Morning Ritual",
     descripcion: "Corte Estándar a precio reducido. Reserva en horario de mañana y disfruta de tu corte por solo 14 €.",
     badge: "17 € → 14 €",
-    condicion: "Lun–Vie · 09:00–14:00",
+    condicion: "Lun–Vie · 10:00–14:00",
   },
   {
     id: "upgrade-mananero",
     nombre: "Upgrade Mañanero",
     descripcion: "Reservas Corte Estándar y por solo 5 € más subes al Corte Medium completo (barba + cejas).",
     badge: "+5 € en vez de +8 €",
-    condicion: "Lun–Vie · 09:00–14:00",
+    condicion: "Lun–Vie · 10:00–14:00",
     extra: "Ahorra 3 € en el upgrade",
   },
   {
@@ -30,34 +30,8 @@ const OFERTAS_MANANA: Oferta[] = [
     nombre: "Pack Madrugador",
     descripcion: "Corte Medium completo con barba y cejas a precio especial. Con snack de bienvenida incluido.",
     badge: "25 € → 20 €",
-    condicion: "Lun–Vie · 09:00–14:00",
+    condicion: "Lun–Vie · 10:00–14:00",
     extra: "🥐 Snack incluido",
-  },
-];
-
-const OFERTAS_VERANO: Oferta[] = [
-  {
-    id: "verano-monastery",
-    nombre: "Verano Monastery",
-    descripcion: "El Corte Premium completo (cabello + barba + cejas + nariz + oído + lavado) a precio de temporada.",
-    badge: "35 € → 28 €",
-    condicion: "Todo agosto · Lun–Vie",
-  },
-  {
-    id: "bono-verano",
-    nombre: "Bono Verano 3+1",
-    descripcion: "Paga 3 cortes de cualquier tipo y el 4.º te sale completamente gratis. Ideal para el verano.",
-    badge: "3+1 gratis",
-    condicion: "Jul–Sep · Lun–Vie",
-    extra: "Válido con cualquier servicio",
-  },
-  {
-    id: "cerveza-verano",
-    nombre: "Verano Refrescante",
-    descripcion: "Solo 10 plazas al día durante julio y agosto. Reserva tu sitio y llévate una bebida fría de cortesía. Primero en llegar, primero en disfrutar.",
-    badge: "10 plazas/día 🍺",
-    condicion: "Jul–Ago · Lun–Vie · Solo las primeras 10 reservas del día",
-    extra: "Bebida incluida · Cerveza (+18) o refresco",
   },
 ];
 
@@ -84,18 +58,15 @@ type OfertaAsignacion = {
   servicio?: string;
   precio?: number;
   extra?: string;
-  franja?: string;  // "manana" = solo horario 09:00–14:00
-  meses?: string;   // "8" o "7,8,9" — meses válidos (1-12)
-  dias?: string;    // "1" = solo lunes (0=dom, 1=lun, ..., 6=sáb)
+  franja?: string;
+  meses?: string;
+  dias?: string;
 };
 
 const SERVICIO_POR_OFERTA: Record<string, OfertaAsignacion> = {
   "morning-ritual":   { servicio: "Corte Estándar", precio: 14,  extra: "Refresco incluido",             franja: "manana" },
   "upgrade-mananero": { servicio: "Corte Medium",   precio: 22,  extra: "Ahorro de 3 € en el upgrade",   franja: "manana" },
   "pack-madrugador":  { servicio: "Corte Medium",   precio: 20,  extra: "Snack incluido",                 franja: "manana" },
-  "verano-monastery": { servicio: "Corte Premium",  precio: 28,  meses: "8" },
-  "bono-verano":      { meses: "7,8,9" },
-  "cerveza-verano":   { extra: "Bebida incluida",                              meses: "7,8" },
   "trae-amigo":       {},
   "lunes-barba":      { servicio: "Solo Barba",     precio: 10,  dias: "1" },
 };
@@ -185,23 +156,16 @@ export default function Ofertas() {
           </h2>
           <div className="divider-gold" />
           <p className="text-[#aaa] text-sm mt-4 max-w-md mx-auto">
-            Más razones para visitarnos. Descuentos especiales por horario, temporada y fidelidad.
+            Más razones para visitarnos. Descuentos especiales por horario y fidelidad.
           </p>
         </div>
 
         <div className="space-y-14">
           <GrupoOfertas
-            titulo="Horario de mañana · 09:00–14:00"
+            titulo="Horario de mañana · 10:00–14:00"
             icono="🌅"
             ofertas={OFERTAS_MANANA}
             color="#C9A84C"
-          />
-          <div className="h-px bg-[#111]" />
-          <GrupoOfertas
-            titulo="Temporada de verano"
-            icono="☀️"
-            ofertas={OFERTAS_VERANO}
-            color="#60A5FA"
           />
           <div className="h-px bg-[#111]" />
           <GrupoOfertas

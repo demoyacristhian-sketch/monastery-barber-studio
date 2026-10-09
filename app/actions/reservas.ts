@@ -4,6 +4,26 @@ import { createClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { Cliente, Servicio, Cita } from "@/lib/database.types";
 
+// Convierte una fecha+hora en hora local de España a ISO UTC.
+// El servidor corre en UTC, así que hay que calcular el offset dinámicamente.
+function spainLocalToISO(fecha: string, hora: string): string {
+  // 1. Crea una fecha tratando la hora como UTC (referencia temporal)
+  const refUtc = new Date(`${fecha}T${hora}:00Z`);
+  // 2. Averigua qué hora marca España en ese instante UTC
+  const spainH = parseInt(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Madrid",
+      hour: "2-digit", hour12: false,
+    }).format(refUtc),
+    10
+  );
+  const [wantH] = hora.split(":").map(Number);
+  // 3. Diferencia = offset España en ese momento (e.g. +2 en verano, +1 en invierno)
+  const offsetHours = spainH - wantH;
+  // 4. Ajusta restando el offset para obtener el UTC real
+  return new Date(refUtc.getTime() - offsetHours * 3_600_000).toISOString();
+}
+
 export type ReservaInput = {
   nombre: string;
   email: string;
@@ -117,36 +137,12 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     }
   }
 
-  // Verano Refrescante: verificar plazas y asignar posición
-  const MAX_PLAZAS_VERANO = 10;
-  let posicionVerano: number | null = null;
-
-  if (input.oferta_nombre === "Verano Refrescante") {
-    const { count, error: countError } = await (admin.from("citas") as any)
-      .select("*", { count: "exact", head: true })
-      .gte("fecha_hora", `${input.fecha}T00:00:00`)
-      .lte("fecha_hora", `${input.fecha}T23:59:59`)
-      .ilike("notas_cliente", "%Verano Refrescante%")
-      .not("estado", "eq", "cancelada");
-
-    if (!countError) {
-      const ocupadas = count ?? 0;
-      if (ocupadas >= MAX_PLAZAS_VERANO) {
-        return {
-          ok: false,
-          error: `Las ${MAX_PLAZAS_VERANO} plazas de Verano Refrescante para este día ya están completas. Prueba con otro día de julio o agosto.`,
-        };
-      }
-      posicionVerano = ocupadas + 1;
-    }
-  }
-
   const { data: servicioRaw } = input.servicio_id
     ? await admin.from("servicios").select("*").eq("id", input.servicio_id).single()
     : { data: null };
   const servicio = servicioRaw as Servicio | null;
 
-  const fechaHora = `${input.fecha}T${input.hora}:00`;
+  const fechaHora = spainLocalToISO(input.fecha, input.hora);
 
   const { data: conflictoRaw } = await admin
     .from("citas")
@@ -161,13 +157,7 @@ export async function createReserva(input: ReservaInput): Promise<ReservaResult>
     return { ok: false, error: "Ese horario acaba de ser reservado. Por favor elige otro." };
   }
 
-  // Inyectar posición de Verano Refrescante en las notas
-  const notasInput = (posicionVerano !== null && input.notas)
-    ? input.notas.replace(
-        "Verano Refrescante",
-        `Verano Refrescante · #${posicionVerano}/${MAX_PLAZAS_VERANO}`
-      )
-    : (input.notas ?? null);
+  const notasInput = input.notas ?? null;
 
   const notas = [
     input.metodo_pago ? `Pago: ${input.metodo_pago}` : null,

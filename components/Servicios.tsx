@@ -134,7 +134,7 @@ export default function Servicios() {
             Reservar cita →
           </Link>
           <a
-            href="https://wa.me/34642861499"
+            href={`https://wa.me/34642861499?text=${encodeURIComponent("Hola, he visto vuestros servicios en la web y me gustaría reservar una cita o pedir información. ¿Podéis ayudarme?")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex btn-outline"

@@ -438,3 +438,31 @@ export async function eliminarCliente(id: string) {
   revalidatePath("/admin/clientes");
   return { ok: true };
 }
+
+// ── Bloqueos de agenda ─────────────────────────────────────────────────────
+export async function crearBloqueo(data: {
+  fecha_inicio: string;
+  fecha_fin: string;
+  barbero_id: string | null;
+  motivo: string | null;
+}) {
+  const admin = createAdminClient();
+  const { error } = await (admin.from("bloqueos_agenda") as any).insert({
+    barbero_id:   data.barbero_id   || null,
+    sede_id:      null,
+    fecha_inicio: data.fecha_inicio,
+    fecha_fin:    data.fecha_fin,
+    motivo:       data.motivo       || null,
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/bloqueos");
+  return { ok: true };
+}
+
+export async function eliminarBloqueo(id: string) {
+  const admin = createAdminClient();
+  const { error } = await (admin.from("bloqueos_agenda") as any).delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/bloqueos");
+  return { ok: true };
+}
