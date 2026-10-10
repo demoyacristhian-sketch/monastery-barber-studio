@@ -323,7 +323,7 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
                     onChange={toggleTodas}
                   />
                 </th>
-                {["HORA / FECHA", "CLIENTE", "SERVICIO", "BARBERO", "DUR.", "PRECIO", "ESTADO", ""].map(h => (
+                {["HORA / FECHA", "CLIENTE", "SERVICIO", "BARBERO", "SEDE", "DUR.", "PRECIO", "ESTADO", ""].map(h => (
                   <th key={h} className="px-4 py-3.5 text-left text-[11px] font-semibold text-zinc-400 tracking-wider whitespace-nowrap">
                     {h}
                   </th>
@@ -405,6 +405,13 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-zinc-600 whitespace-nowrap">{c.barberos?.nombre  ?? "—"}</td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      {c.sedes?.nombre ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-500 font-medium">
+                          {c.sedes.nombre}
+                        </span>
+                      ) : "—"}
+                    </td>
                     <td className="px-4 py-3.5 text-zinc-500 whitespace-nowrap">{dur ? `${dur} min` : "—"}</td>
                     <td className="px-4 py-3.5 text-zinc-900 font-medium tabular-nums whitespace-nowrap">{euros(c.precio_final)}</td>
 
