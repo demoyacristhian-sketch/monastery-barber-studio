@@ -9,13 +9,25 @@ export const dynamic = "force-dynamic";
 async function getCitas() {
   const admin = createAdminClient();
   const { data, error } = await (admin.from("citas") as any)
-    .select("id, fecha_hora, estado, precio_final, notas_cliente, reagendar_solicitado, reagendar_motivo, clientes(nombre, telefono, email, fecha_nacimiento), barberos(nombre), servicios(nombre, duracion_minutos), sedes(nombre)")
+    .select("id, fecha_hora, estado, precio_final, notas_cliente, reagendar_solicitado, reagendar_motivo, barbero_id, sede_id, clientes(nombre, telefono, email, fecha_nacimiento), barberos(nombre), servicios(nombre, duracion_minutos), sedes(nombre)")
     .order("fecha_hora", { ascending: true })
-    .limit(500);
+    .limit(2000);
   if (error) {
     console.error("[CitasPage] getCitas error:", error.message);
     return [];
   }
+  return data ?? [];
+}
+
+async function getSedes() {
+  const admin = createAdminClient();
+  const { data } = await (admin.from("sedes") as any).select("id, nombre").eq("activa", true).order("nombre");
+  return data ?? [];
+}
+
+async function getBarberos() {
+  const admin = createAdminClient();
+  const { data } = await (admin.from("barberos") as any).select("id, nombre").eq("activo", true).order("nombre");
   return data ?? [];
 }
 
@@ -30,11 +42,13 @@ async function getNotificaciones() {
 }
 
 export default async function CitasPage() {
-  const [citas, notificaciones] = await Promise.all([getCitas(), getNotificaciones()]);
+  const [citas, notificaciones, sedes, barberos] = await Promise.all([
+    getCitas(), getNotificaciones(), getSedes(), getBarberos(),
+  ]);
   return (
     <>
       <NotificacionesCRM notificaciones={notificaciones as any[]} />
-      <CitasAdmin citas={citas as any} />
+      <CitasAdmin citas={citas as any} sedes={sedes} barberos={barberos} />
     </>
   );
 }

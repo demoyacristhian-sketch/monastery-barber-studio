@@ -22,6 +22,8 @@ type Cita = {
   notas_cliente?: string | null;
   reagendar_solicitado?: boolean;
   reagendar_motivo?: string | null;
+  barbero_id?: string | null;
+  sede_id?: string | null;
   clientes: { nombre: string; telefono: string | null; email?: string | null; fecha_nacimiento?: string | null } | null;
   servicios: { nombre: string; duracion_minutos: number | null } | null;
   barberos:  { nombre: string } | null;
@@ -34,7 +36,7 @@ function getOfertaTag(notas: string | null | undefined): string | null {
   return match ? match[1].trim() : null;
 }
 
-type Periodo = "proximas" | "hoy" | "mañana" | "semana" | "mes";
+type Periodo = "proximas" | "hoy" | "mañana" | "semana" | "mes" | "historico";
 
 const BADGE: Record<string, { label: string; cls: string }> = {
   pendiente:  { label: "Pendiente",  cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-200"      },
@@ -86,12 +88,24 @@ function Checkbox({ checked, indeterminate, onChange }: {
   );
 }
 
-export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] }) {
-  const [items,          setItems]      = useState<Cita[]>(citasIniciales);
-  const [busqueda,       setBusqueda]   = useState("");
-  const [periodo,        setPeriodo]    = useState<Periodo>("proximas");
-  const [filtroEstado,   setFiltroE]    = useState("todos");
-  const [filtrosOpen,    setFiltrosO]   = useState(false);
+export default function CitasAdmin({
+  citas: citasIniciales,
+  sedes = [],
+  barberos = [],
+}: {
+  citas: Cita[];
+  sedes?: { id: string; nombre: string }[];
+  barberos?: { id: string; nombre: string }[];
+}) {
+  const [items,           setItems]         = useState<Cita[]>(citasIniciales);
+  const [busqueda,        setBusqueda]      = useState("");
+  const [periodo,         setPeriodo]       = useState<Periodo>("proximas");
+  const [filtroEstado,    setFiltroE]       = useState("todos");
+  const [filtrosOpen,     setFiltrosO]      = useState(false);
+  const [filtroSedeId,    setFiltroSedeId]  = useState("");
+  const [filtroBarberoId, setFiltroBarberoId] = useState("");
+  const [fechaDesde,      setFechaDesde]    = useState("");
+  const [fechaHasta,      setFechaHasta]    = useState("");
   const [modalAbierto,   setModal]      = useState(false);
   const [actualizando,   setAct]        = useState<string | null>(null);
   const [eliminando,     setElim]       = useState<string | null>(null);
@@ -108,28 +122,43 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
 
   function inPeriodo(c: Cita) {
     const f = c.fecha_hora.slice(0, 10);
-    if (periodo === "proximas") return f >= hoy;
-    if (periodo === "hoy")      return f === hoy;
-    if (periodo === "mañana")   return f === manana;
-    if (periodo === "semana")   return f >= lun && f <= dom;
-    return f >= inicio && f <= finMes;
+    if (periodo === "proximas")  return f >= hoy;
+    if (periodo === "hoy")       return f === hoy;
+    if (periodo === "mañana")    return f === manana;
+    if (periodo === "semana")    return f >= lun && f <= dom;
+    if (periodo === "mes")       return f >= inicio && f <= finMes;
+    // historico: rango personalizado o todo el histórico
+    if (fechaDesde && f < fechaDesde) return false;
+    if (fechaHasta && f > fechaHasta) return false;
+    return true;
   }
 
   const citasPeriodo = items.filter(inPeriodo);
-  const filtradas = citasPeriodo.filter(c => {
-    const q = busqueda.toLowerCase();
-    const matchQ = !q
-      || (c.clientes?.nombre ?? "").toLowerCase().includes(q)
-      || (c.servicios?.nombre ?? "").toLowerCase().includes(q)
-      || (c.barberos?.nombre ?? "").toLowerCase().includes(q);
-    return matchQ && (filtroEstado === "todos" || c.estado === filtroEstado);
+
+  const citasBase = citasPeriodo.filter(c => {
+    const matchSede    = !filtroSedeId    || c.sede_id    === filtroSedeId;
+    const matchBarbero = !filtroBarberoId || c.barbero_id === filtroBarberoId;
+    return matchSede && matchBarbero;
   });
 
+  const filtradas = (() => {
+    const base = citasBase.filter(c => {
+      const q = busqueda.toLowerCase();
+      const matchQ = !q
+        || (c.clientes?.nombre ?? "").toLowerCase().includes(q)
+        || (c.servicios?.nombre ?? "").toLowerCase().includes(q)
+        || (c.barberos?.nombre ?? "").toLowerCase().includes(q);
+      return matchQ && (filtroEstado === "todos" || c.estado === filtroEstado);
+    });
+    if (periodo === "historico") return [...base].sort((a, b) => b.fecha_hora.localeCompare(a.fecha_hora));
+    return base;
+  })();
+
   const stats = {
-    total:       citasPeriodo.length,
-    completadas: citasPeriodo.filter(c => c.estado === "completada").length,
-    pendientes:  citasPeriodo.filter(c => c.estado === "pendiente" || c.estado === "confirmada").length,
-    ingresos:    citasPeriodo.filter(c => c.estado === "completada").reduce((s, c) => s + (c.precio_final ?? 0), 0),
+    total:       citasBase.length,
+    completadas: citasBase.filter(c => c.estado === "completada").length,
+    pendientes:  citasBase.filter(c => c.estado === "pendiente" || c.estado === "confirmada").length,
+    ingresos:    citasBase.filter(c => c.estado === "completada").reduce((s, c) => s + (c.precio_final ?? 0), 0),
   };
 
   // Selección
@@ -196,6 +225,7 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
   const labelPeriodo = ({
     proximas: "todas las próximas", hoy: "hoy", mañana: "mañana",
     semana: "próximos 7 días", mes: "próximos 30 días",
+    historico: "período seleccionado",
   }[periodo]) ?? "período";
 
   const mensajeVacio = ({
@@ -203,12 +233,13 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
     hoy: "No hay citas para hoy.", mañana: "No hay citas para mañana.",
     semana: "No hay citas en los próximos 7 días.",
     mes: "No hay citas en los próximos 30 días.",
+    historico: "No hay citas en el período seleccionado.",
   }[periodo]) ?? "No hay citas.";
 
   const periodos: { id: Periodo; label: string }[] = [
     { id: "proximas", label: "Próximas" }, { id: "hoy", label: "Hoy" },
     { id: "mañana", label: "Mañana" }, { id: "semana", label: "7 días" },
-    { id: "mes", label: "Mes" },
+    { id: "mes", label: "Mes" }, { id: "historico", label: "Histórico" },
   ];
 
   return (
@@ -237,50 +268,101 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
       </div>
 
       {/* ── Barra de filtros ── */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none z-10" />
-          <input type="text" placeholder="Buscar cliente..." value={busqueda}
-            onChange={e => setBusqueda(e.target.value)}
-            className="w-full pr-4 py-2 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/30 focus:border-[#C9A84C] text-zinc-900 placeholder:text-zinc-400"
-            style={{ paddingLeft: "2.25rem" }} />
-        </div>
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Búsqueda */}
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none z-10" />
+            <input type="text" placeholder="Buscar cliente, servicio o barbero..." value={busqueda}
+              onChange={e => setBusqueda(e.target.value)}
+              className="w-full pr-4 py-2 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/30 focus:border-[#C9A84C] text-zinc-900 placeholder:text-zinc-400"
+              style={{ paddingLeft: "2.25rem" }} />
+          </div>
 
-        <div className="relative">
-          <button onClick={() => setFiltrosO(!filtrosOpen)}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
-              filtrosOpen || filtroEstado !== "todos"
-                ? "bg-zinc-900 text-white border-zinc-900"
-                : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
-            }`}>
-            <SlidersHorizontal className="w-3.5 h-3.5" /> Filtros
-            {filtroEstado !== "todos" && <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#C9A84C" }} />}
-          </button>
-          {filtrosOpen && (
-            <div className="absolute top-full left-0 mt-2 bg-white border border-zinc-200 rounded-xl shadow-lg p-2 z-20 min-w-[160px]">
-              {ESTADOS_FILTRO.map(e => (
-                <button key={e} onClick={() => { setFiltroE(e); setFiltrosO(false); }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    filtroEstado === e ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-50"
-                  }`}>
-                  {e === "todos" ? "Todos" : (BADGE[e]?.label ?? e)}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 bg-zinc-100 rounded-xl p-1">
-          {periodos.map(p => (
-            <button key={p.id} onClick={() => setPeriodo(p.id)}
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                periodo === p.id ? "text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
-              }`}
-              style={periodo === p.id ? { background: "#C9A84C" } : {}}>
-              {p.label}
+          {/* Estado */}
+          <div className="relative">
+            <button onClick={() => setFiltrosO(!filtrosOpen)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                filtrosOpen || filtroEstado !== "todos"
+                  ? "bg-zinc-900 text-white border-zinc-900"
+                  : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+              }`}>
+              <SlidersHorizontal className="w-3.5 h-3.5" /> Estado
+              {filtroEstado !== "todos" && <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#C9A84C" }} />}
             </button>
-          ))}
+            {filtrosOpen && (
+              <div className="absolute top-full left-0 mt-2 bg-white border border-zinc-200 rounded-xl shadow-lg p-2 z-20 min-w-[160px]">
+                {ESTADOS_FILTRO.map(e => (
+                  <button key={e} onClick={() => { setFiltroE(e); setFiltrosO(false); }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      filtroEstado === e ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-50"
+                    }`}>
+                    {e === "todos" ? "Todos" : (BADGE[e]?.label ?? e)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sede */}
+          {sedes.length > 1 && (
+            <select value={filtroSedeId} onChange={e => setFiltroSedeId(e.target.value)}
+              className={`px-3.5 py-2 text-sm border rounded-xl bg-white focus:outline-none focus:border-[#C9A84C] transition-colors ${
+                filtroSedeId ? "border-zinc-900 text-zinc-900 font-medium" : "border-zinc-200 text-zinc-600"
+              }`}>
+              <option value="">Todas las sedes</option>
+              {sedes.map(s => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+            </select>
+          )}
+
+          {/* Barbero */}
+          <select value={filtroBarberoId} onChange={e => setFiltroBarberoId(e.target.value)}
+            className={`px-3.5 py-2 text-sm border rounded-xl bg-white focus:outline-none focus:border-[#C9A84C] transition-colors ${
+              filtroBarberoId ? "border-zinc-900 text-zinc-900 font-medium" : "border-zinc-200 text-zinc-600"
+            }`}>
+            <option value="">Todos los barberos</option>
+            {barberos.map(b => <option key={b.id} value={b.id}>{b.nombre}</option>)}
+          </select>
+
+          {/* Período */}
+          <div className="flex items-center gap-1 bg-zinc-100 rounded-xl p-1">
+            {periodos.map(p => (
+              <button key={p.id} onClick={() => setPeriodo(p.id)}
+                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  periodo === p.id ? "text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
+                }`}
+                style={periodo === p.id ? { background: "#C9A84C" } : {}}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Rango de fechas (solo en modo Histórico) */}
+        {periodo === "historico" && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-zinc-500 whitespace-nowrap font-medium">Desde</label>
+              <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:border-[#C9A84C] text-zinc-900" />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-zinc-500 whitespace-nowrap font-medium">Hasta</label>
+              <input type="date" value={fechaHasta} min={fechaDesde || undefined}
+                onChange={e => setFechaHasta(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:border-[#C9A84C] text-zinc-900" />
+            </div>
+            {(fechaDesde || fechaHasta) && (
+              <button onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
+                className="text-xs text-zinc-400 hover:text-zinc-700 underline underline-offset-2 transition-colors">
+                Limpiar fechas
+              </button>
+            )}
+            <p className="text-xs text-zinc-400">
+              {!fechaDesde && !fechaHasta ? "Mostrando todo el histórico" : `${filtradas.length} resultado${filtradas.length !== 1 ? "s" : ""}`}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── Barra acción masiva ── */}
@@ -333,7 +415,7 @@ export default function CitasAdmin({ citas: citasIniciales }: { citas: Cita[] })
             <tbody className="divide-y divide-zinc-50">
               {filtradas.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-6 py-14 text-center text-sm text-zinc-400">{mensajeVacio}</td>
+                  <td colSpan={10} className="px-6 py-14 text-center text-sm text-zinc-400">{mensajeVacio}</td>
                 </tr>
               ) : filtradas.map(c => {
                 const d      = new Date(c.fecha_hora);
