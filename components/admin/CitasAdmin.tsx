@@ -127,9 +127,11 @@ export default function CitasAdmin({
     if (periodo === "mañana")    return f === manana;
     if (periodo === "semana")    return f >= lun && f <= dom;
     if (periodo === "mes")       return f >= inicio && f <= finMes;
-    // historico: rango personalizado o todo el histórico
-    if (fechaDesde && f < fechaDesde) return false;
-    if (fechaHasta && f > fechaHasta) return false;
+    // historico: por defecto muestra hasta hoy; el rango ajusta los límites
+    const limiteInferior = fechaDesde || null;
+    const limiteSuperior = fechaHasta || hoy;
+    if (limiteInferior && f < limiteInferior) return false;
+    if (f > limiteSuperior) return false;
     return true;
   }
 
@@ -269,8 +271,52 @@ export default function CitasAdmin({
 
       {/* ── Barra de filtros ── */}
       <div className="space-y-3">
+
+        {/* Fila 1: Período */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium text-zinc-400 whitespace-nowrap">Vista:</span>
+          <div className="flex items-center gap-1 bg-zinc-100 rounded-xl p-1 flex-wrap">
+            {periodos.map(p => (
+              <button key={p.id} onClick={() => setPeriodo(p.id)}
+                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  periodo === p.id ? "text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
+                }`}
+                style={periodo === p.id ? { background: "#C9A84C" } : {}}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Fila 2: Rango de fechas (visible en modo Histórico) */}
+        {periodo === "historico" && (
+          <div className="flex items-center gap-3 flex-wrap bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
+            <span className="text-xs font-medium text-zinc-500 whitespace-nowrap">Rango:</span>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-zinc-500 whitespace-nowrap">Desde</label>
+              <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-[#C9A84C] text-zinc-900" />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-zinc-500 whitespace-nowrap">Hasta</label>
+              <input type="date" value={fechaHasta} min={fechaDesde || undefined}
+                onChange={e => setFechaHasta(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-[#C9A84C] text-zinc-900" />
+            </div>
+            {(fechaDesde || fechaHasta) && (
+              <button onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
+                className="text-xs text-zinc-400 hover:text-zinc-700 underline underline-offset-2 transition-colors">
+                Limpiar
+              </button>
+            )}
+            <span className="text-xs text-zinc-400 ml-auto">
+              {filtradas.length} cita{filtradas.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+
+        {/* Fila 3: Búsqueda + filtros por estado, sede, barbero */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Búsqueda */}
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none z-10" />
             <input type="text" placeholder="Buscar cliente, servicio o barbero..." value={busqueda}
@@ -323,46 +369,7 @@ export default function CitasAdmin({
             <option value="">Todos los barberos</option>
             {barberos.map(b => <option key={b.id} value={b.id}>{b.nombre}</option>)}
           </select>
-
-          {/* Período */}
-          <div className="flex items-center gap-1 bg-zinc-100 rounded-xl p-1">
-            {periodos.map(p => (
-              <button key={p.id} onClick={() => setPeriodo(p.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  periodo === p.id ? "text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
-                }`}
-                style={periodo === p.id ? { background: "#C9A84C" } : {}}>
-                {p.label}
-              </button>
-            ))}
-          </div>
         </div>
-
-        {/* Rango de fechas (solo en modo Histórico) */}
-        {periodo === "historico" && (
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-zinc-500 whitespace-nowrap font-medium">Desde</label>
-              <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)}
-                className="px-3 py-1.5 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:border-[#C9A84C] text-zinc-900" />
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-zinc-500 whitespace-nowrap font-medium">Hasta</label>
-              <input type="date" value={fechaHasta} min={fechaDesde || undefined}
-                onChange={e => setFechaHasta(e.target.value)}
-                className="px-3 py-1.5 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:border-[#C9A84C] text-zinc-900" />
-            </div>
-            {(fechaDesde || fechaHasta) && (
-              <button onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
-                className="text-xs text-zinc-400 hover:text-zinc-700 underline underline-offset-2 transition-colors">
-                Limpiar fechas
-              </button>
-            )}
-            <p className="text-xs text-zinc-400">
-              {!fechaDesde && !fechaHasta ? "Mostrando todo el histórico" : `${filtradas.length} resultado${filtradas.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* ── Barra acción masiva ── */}
