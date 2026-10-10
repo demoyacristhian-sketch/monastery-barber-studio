@@ -18,7 +18,7 @@ type Servicio = { id: string; nombre: string; precio: number; duracion_minutos: 
 const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"] as const;
 
 const HORARIO_DEFAULT = DIAS.map((dia, i) => ({
-  dia, abierto: i < 6, apertura: "10:00", cierre: i === 5 ? "17:00" : "20:00",
+  dia, abierto: i < 6, apertura: "10:00", cierre: i === 5 ? "19:00" : "20:00",
 }));
 
 // ── Campo editable inline ──────────────────────────────────────────────────

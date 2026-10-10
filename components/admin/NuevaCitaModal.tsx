@@ -311,7 +311,7 @@ export default function NuevaCitaModal({
                   Hora disponible
                   {form.barberoId && form.fecha && !diaCerrado && (
                     <span className="text-zinc-400 ml-1 normal-case font-normal">
-                      · Horario {esSabado ? "10:00-17:00" : "10:00-14:00 y 16:00-20:00"}
+                      · Horario {esSabado ? "10:00-19:00" : "10:00-14:00 y 16:00-20:00"}
                     </span>
                   )}
                 </label>

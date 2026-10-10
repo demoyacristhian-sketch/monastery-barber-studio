@@ -12,7 +12,7 @@ const SPAIN_TZ = "Europe/Madrid";
 function generarSlots(diaSemana: number): string[] {
   const slots: string[] = [];
   const periodos = diaSemana === 6
-    ? [{ inicio: 10 * 60, fin: 17 * 60 }]
+    ? [{ inicio: 10 * 60, fin: 19 * 60 }]
     : [{ inicio: 10 * 60, fin: 14 * 60 }, { inicio: 16 * 60, fin: 20 * 60 }];
   for (const { inicio, fin } of periodos) {
     let cur = inicio;
