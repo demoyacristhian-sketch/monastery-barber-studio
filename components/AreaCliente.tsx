@@ -80,7 +80,11 @@ export default async function AreaCliente() {
 
   const { cliente, proximas, pasadas, membresia } = await getDashboardData(user.id);
 
-  if (!cliente) return <AreaClienteNuevo email={user.email!} />;
+  const authName = (user.user_metadata?.full_name as string | undefined)
+    || (user.user_metadata?.name as string | undefined)
+    || undefined;
+
+  if (!cliente) return <AreaClienteNuevo email={user.email!} nombre={authName} />;
 
   return <Dashboard
     cliente={cliente}
@@ -140,22 +144,57 @@ function AreaClientePublica() {
 }
 
 // ── Cliente sin perfil aún ────────────────────────────────────────────────
-function AreaClienteNuevo({ email }: { email: string }) {
+function AreaClienteNuevo({ email, nombre }: { email: string; nombre?: string }) {
+  const displayName = nombre || email.split("@")[0];
+
   return (
-    <section className="py-16 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
-      <div className="max-w-md mx-auto text-center">
-        <div className="card-premium p-10">
-          <div className="text-4xl mb-4">✦</div>
-          <h2 className="font-serif text-2xl font-bold mb-2" style={{ color: "var(--vip-text)" }}>Bienvenido</h2>
-          <p className="text-sm mb-1" style={{ color: "var(--vip-muted)" }}>{email}</p>
-          <div className="divider-gold" />
-          <p className="text-sm mt-4 mb-8" style={{ color: "var(--vip-muted)" }}>
-            Reserva tu primera cita para activar tu perfil completo en el Espacio VIP.
+    <section className="pt-6 pb-28 sm:pb-10 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
+      <div className="max-w-lg mx-auto space-y-5">
+
+        {/* Greeting — visible sin scroll */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-px flex-1" style={{ background: "var(--vip-border)" }} />
+            <span className="section-label text-[10px]">Espacio VIP · Members Only</span>
+            <div className="h-px flex-1" style={{ background: "var(--vip-border)" }} />
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold leading-tight" style={{ color: "var(--vip-text)" }}>
+            Bienvenido,{" "}
+            <span className="gold-text">{displayName}</span>
+          </h1>
+          <p className="text-sm mt-2" style={{ color: "var(--vip-muted)" }}>
+            Tu acceso exclusivo al mundo Monastery.
           </p>
-          <Link href="/espacio-vip/reservar" className="inline-flex btn-gold">
-            Reservar primera cita →
+        </div>
+
+        {/* CTAs — siempre visibles sin scroll */}
+        <div className="flex flex-col gap-3">
+          <Link href="/espacio-vip/reservar" className="btn-gold flex justify-center text-sm py-3.5">
+            Reservar cita →
+          </Link>
+          <Link href="/espacio-vip/perfil" className="btn-outline flex justify-center text-sm py-3">
+            Activar mi perfil VIP
           </Link>
         </div>
+
+        {/* Features */}
+        <div className="card-premium p-5">
+          <p className="section-label mb-4">Qué incluye tu espacio</p>
+          <div className="space-y-3">
+            {[
+              { icon: "📅", text: "Reservas exprés con tus datos guardados" },
+              { icon: "⭐", text: "10 sellos = 1 corte gratis" },
+              { icon: "👑", text: "Membresías VIP con descuentos exclusivos" },
+              { icon: "🎁", text: "Ofertas y promociones solo para miembros" },
+            ].map(f => (
+              <div key={f.icon} className="flex items-center gap-3">
+                <span className="text-base shrink-0">{f.icon}</span>
+                <p className="text-sm" style={{ color: "var(--vip-muted)" }}>{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   );
@@ -183,18 +222,23 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
         <InstallPrompt />
 
         {/* Saludo */}
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <p className="section-label mb-1">Bienvenido de vuelta</p>
-            <h2 className="font-serif text-3xl font-bold flex items-center gap-2" style={{ color: "var(--vip-text)" }}>
-              {cliente.nombre}
-              {esVip && <Crown className="w-6 h-6 text-[#C9A84C]" />}
-            </h2>
-            <div className="h-px w-16 bg-[#C9A84C]/50 mt-3" />
+        <div>
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-px w-8" style={{ background: "var(--vip-border)" }} />
+                <span className="section-label text-[10px]">Espacio VIP · Members Only</span>
+              </div>
+              <h2 className="font-serif text-3xl font-bold flex items-center gap-2" style={{ color: "var(--vip-text)" }}>
+                Hola, {cliente.nombre.split(" ")[0]}
+                {esVip && <Crown className="w-6 h-6 text-[#C9A84C]" />}
+              </h2>
+              <div className="h-px w-16 bg-[#C9A84C]/50 mt-2" />
+            </div>
+            <Link href="/espacio-vip/reservar" className="inline-flex btn-gold text-sm self-start shrink-0">
+              + Nueva reserva
+            </Link>
           </div>
-          <Link href="/espacio-vip/reservar" className="inline-flex btn-gold text-sm self-start shrink-0">
-            + Nueva reserva
-          </Link>
         </div>
 
         {/* Stats */}
