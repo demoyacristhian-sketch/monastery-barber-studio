@@ -3,9 +3,40 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const RUTAS_CLIENTE = ["/espacio-vip", "/mi-ritual"];
 const RUTAS_ADMIN   = ["/admin"];
+const APP_HOST      = "app.monasterybarbers.es";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+  const hostname = request.headers.get("host") || "";
+  const isAppDomain = hostname === APP_HOST;
+
+  // ── Routing exclusivo del subdominio app.monasterybarbers.es ──────────
+  if (isAppDomain) {
+    // Manifest y SW propios para el subdominio
+    if (pathname === "/manifest.json") {
+      return NextResponse.rewrite(new URL("/app-manifest.json", request.url));
+    }
+    if (pathname === "/sw.js") {
+      return NextResponse.rewrite(new URL("/app-sw.js", request.url));
+    }
+    // Redirige rutas raíz/desconocidas al Espacio VIP
+    const skipRewrite =
+      pathname.startsWith("/espacio-vip") ||
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/auth") ||
+      pathname.startsWith("/login") ||
+      pathname.startsWith("/icons") ||
+      pathname.startsWith("/images") ||
+      pathname.startsWith("/fonts");
+    if (!skipRewrite) {
+      const url = request.nextUrl.clone();
+      url.pathname = pathname === "/" ? "/espacio-vip" : `/espacio-vip${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +56,6 @@ export async function middleware(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const pathname = request.nextUrl.pathname;
 
   // Rutas de cliente: requieren sesión
   const esRutaCliente = RUTAS_CLIENTE.some((r) => pathname.startsWith(r));

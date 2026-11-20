@@ -49,6 +49,14 @@ export default function VipNav({ nombre }: { nombre: string }) {
   }, []);
 
   async function handleInstalar() {
+    const isAppDomain = window.location.hostname === "app.monasterybarbers.es";
+
+    // Si no estamos en el subdominio exclusivo, abrimos la URL de la app independiente
+    if (!isAppDomain) {
+      window.open("https://app.monasterybarbers.es", "_blank", "noopener");
+      return;
+    }
+
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -227,7 +235,7 @@ export default function VipNav({ nombre }: { nombre: string }) {
                     </div>
                   ))}
                   <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(201,168,76,0.07)", color: "#C9A84C" }}>
-                    ⚠️ Debe abrirse en Safari para poder instalar
+                    ⚠️ Ábrelo en Safari en <strong>app.monasterybarbers.es</strong>
                   </div>
                 </>
               ) : (
@@ -247,7 +255,7 @@ export default function VipNav({ nombre }: { nombre: string }) {
                     </div>
                   ))}
                   <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(201,168,76,0.07)", color: "#C9A84C" }}>
-                    ⚠️ Debe abrirse en Chrome para poder instalar
+                    ⚠️ Ábrelo en Chrome en <strong>app.monasterybarbers.es</strong>
                   </div>
                 </>
               )}

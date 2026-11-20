@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import SwRegister from "@/components/vip/SwRegister";
 import { VipThemeProvider } from "@/components/vip/VipThemeProvider";
 
@@ -11,17 +12,22 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export const metadata: Metadata = {
-  manifest: "/espacio-vip/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Monastery VIP",
-  },
-  icons: {
-    apple: "/icons/icon-192.png",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  const isApp = host === "app.monasterybarbers.es";
+  return {
+    manifest: isApp ? "/manifest.json" : "/espacio-vip/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "Monastery VIP",
+    },
+    icons: {
+      apple: "/icons/icon-192.png",
+    },
+  };
+}
 
 export default function VipLayout({ children }: { children: React.ReactNode }) {
   return (
