@@ -476,11 +476,13 @@ export async function crearCierreEspecial(data: {
   motivo?:      string;
 }) {
   const admin = createAdminClient();
-  const { error } = await (admin.from("cierres_especiales") as any)
-    .insert({ ...data, motivo: data.motivo || null });
-  if (error) return { ok: false, error: error.message };
+  const { data: row, error } = await (admin.from("cierres_especiales") as any)
+    .insert({ ...data, motivo: data.motivo || null })
+    .select("id")
+    .single();
+  if (error) return { ok: false as const, error: error.message };
   revalidatePath("/admin/config");
-  return { ok: true };
+  return { ok: true as const, id: (row as any).id as string };
 }
 
 export async function eliminarCierreEspecial(id: string) {

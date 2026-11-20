@@ -277,7 +277,7 @@ function SeccionCierresEspeciales({ sedeId, cierresIniciales }: { sedeId: string
     setSaving(true);
     const res = await crearCierreEspecial({ sede_id: sedeId, ...form, motivo: form.motivo || undefined });
     if (res.ok) {
-      setItems(p => [...p, { id: Date.now().toString(), sede_id: sedeId, fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, motivo: form.motivo || null }]);
+      setItems(p => [...p, { id: res.id, sede_id: sedeId, fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, motivo: form.motivo || null }]);
       setForm({ fecha_inicio: "", fecha_fin: "", motivo: "" });
     } else { setError(res.error ?? "Error al guardar"); }
     setSaving(false);
