@@ -12,7 +12,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  manifest: "/manifest.json",
+  manifest: "/espacio-vip/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

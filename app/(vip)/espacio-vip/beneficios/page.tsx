@@ -106,17 +106,17 @@ export default async function BeneficiosPage() {
   const nivel = clienteRaw?.nivel as string | null;
 
   return (
-    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
+    <main className="min-h-screen pt-6 pb-24 sm:py-10 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
       <div className="max-w-5xl mx-auto space-y-16">
 
         {/* Header */}
         <div>
           <p className="section-label mb-1">Solo para ti</p>
-          <h1 className="font-serif text-3xl font-bold">
+          <h1 className="font-serif text-3xl font-bold" style={{ color: "var(--vip-text)" }}>
             Beneficios <span className="gold-text">VIP</span>
           </h1>
           <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
-          <p className="text-[#999] text-sm mt-3">
+          <p className="text-sm mt-3" style={{ color: "var(--vip-muted)" }}>
             Ofertas exclusivas, tendencias del sector y ventajas de membresía reservadas para nuestros clientes.
           </p>
         </div>
@@ -137,15 +137,15 @@ export default async function BeneficiosPage() {
                     {o.badge}
                   </div>
                   <p className="section-label mb-2">{o.tag}</p>
-                  <h3 className="font-serif text-lg font-bold text-white mb-2">{o.titulo}</h3>
-                  <p className="text-[#999] text-sm mb-4 leading-relaxed flex-1">{o.desc}</p>
+                  <h3 className="font-serif text-lg font-bold mb-2" style={{ color: "var(--vip-text)" }}>{o.titulo}</h3>
+                  <p className="text-sm mb-4 leading-relaxed flex-1" style={{ color: "var(--vip-muted)" }}>{o.desc}</p>
                   <div className="flex items-baseline gap-2 mb-4">
-                    <p className="text-[#C9A84C] text-sm font-bold">{o.precio}</p>
+                    <p className="text-sm font-bold" style={{ color: "#C9A84C" }}>{o.precio}</p>
                     {o.precioBase && (
-                      <p className="text-[#888] text-xs line-through">{o.precioBase}</p>
+                      <p className="text-xs line-through" style={{ color: "var(--vip-dimmed)" }}>{o.precioBase}</p>
                     )}
                   </div>
-                  <Link href={href} className="text-[#C9A84C] text-xs hover:text-white transition-colors self-start">
+                  <Link href={href} className="text-xs transition-opacity hover:opacity-70 self-start" style={{ color: "#C9A84C" }}>
                     Reservar esta oferta →
                   </Link>
                 </div>
@@ -157,7 +157,7 @@ export default async function BeneficiosPage() {
         {/* Membresías */}
         <div>
           <p className="section-label mb-2">La Orden — Membresías</p>
-          <p className="text-[#999] text-sm mb-6">
+          <p className="text-sm mb-6" style={{ color: "var(--vip-muted)" }}>
             Hazte miembro y accede a cortes ilimitados, descuentos y prioridad de agenda.
             Habla con tu barbero para activar tu plan.
           </p>
@@ -175,16 +175,16 @@ export default async function BeneficiosPage() {
                 <p className="font-serif text-2xl font-bold mb-0.5" style={{ color: p.color }}>
                   {p.nombre}
                 </p>
-                <p className="text-white text-lg font-semibold mb-4">{p.precio}</p>
+                <p className="text-lg font-semibold mb-4" style={{ color: "var(--vip-text)" }}>{p.precio}</p>
                 {nivel === p.nombre && (
-                  <p className="text-[#C9A84C] text-xs mb-3 flex items-center gap-1">
+                  <p className="text-xs mb-3 flex items-center gap-1" style={{ color: "#C9A84C" }}>
                     ✓ Tu plan actual
                   </p>
                 )}
                 <ul className="space-y-2">
                   {p.beneficios.map(b => (
-                    <li key={b} className="text-[#999] text-xs flex items-start gap-2">
-                      <span className="text-[#C9A84C] mt-0.5 shrink-0">·</span>
+                    <li key={b} className="text-xs flex items-start gap-2" style={{ color: "var(--vip-muted)" }}>
+                      <span className="mt-0.5 shrink-0" style={{ color: "#C9A84C" }}>·</span>
                       {b}
                     </li>
                   ))}
@@ -192,7 +192,7 @@ export default async function BeneficiosPage() {
               </div>
             ))}
           </div>
-          <p className="text-[#777] text-xs text-center mt-4">
+          <p className="text-xs text-center mt-4" style={{ color: "var(--vip-dimmed)" }}>
             Para activar o cambiar tu membresía, habla con tu barbero o escríbenos por WhatsApp.
           </p>
         </div>
@@ -205,10 +205,10 @@ export default async function BeneficiosPage() {
               <div key={t.titulo} className="card-premium p-6">
                 <div className="flex items-center justify-between mb-3">
                   <span className="section-label text-[10px]">{t.categoria}</span>
-                  <span className="text-[#777] text-xs">{t.tiempo}</span>
+                  <span className="text-xs" style={{ color: "var(--vip-dimmed)" }}>{t.tiempo}</span>
                 </div>
-                <h3 className="font-serif text-xl font-bold text-white mb-2">{t.titulo}</h3>
-                <p className="text-[#999] text-sm leading-relaxed">{t.desc}</p>
+                <h3 className="font-serif text-xl font-bold mb-2" style={{ color: "var(--vip-text)" }}>{t.titulo}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--vip-muted)" }}>{t.desc}</p>
               </div>
             ))}
           </div>
@@ -216,10 +216,10 @@ export default async function BeneficiosPage() {
 
         {/* CTA */}
         <div className="border border-[#C9A84C]/20 bg-gradient-to-r from-transparent via-[#C9A84C]/5 to-transparent p-10 text-center">
-          <h3 className="font-serif text-2xl font-bold mb-2">
+          <h3 className="font-serif text-2xl font-bold mb-2" style={{ color: "var(--vip-text)" }}>
             ¿Listo para tu próxima <span className="gold-text">sesión</span>?
           </h3>
-          <p className="text-[#999] text-sm mb-6 max-w-sm mx-auto">
+          <p className="text-sm mb-6 max-w-sm mx-auto" style={{ color: "var(--vip-muted)" }}>
             Reserva ahora y aplica automáticamente tus beneficios de miembro.
           </p>
           <Link href="/espacio-vip/reservar" className="btn-gold inline-flex">

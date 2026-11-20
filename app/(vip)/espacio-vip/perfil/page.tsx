@@ -298,7 +298,7 @@ export default function PerfilPage() {
               <p className="text-xs mt-1" style={{ color: "var(--vip-muted)" }}>Visitas totales</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold" style={{ color: nivelColor }}>{(cliente.sellos ?? 0)}/10</p>
+              <p className="text-2xl font-bold" style={{ color: nivelColor }}>{(cliente.sellos ?? 0)}/8</p>
               <p className="text-xs mt-1" style={{ color: "var(--vip-muted)" }}>Sellos actuales</p>
             </div>
           </div>
