@@ -155,7 +155,7 @@ export async function crearBarbero(
 // ── Sedes ──────────────────────────────────────────────────────────────────
 export async function actualizarSede(
   id: string,
-  data: { nombre?: string; direccion?: string; activa?: boolean; telefono?: string; email?: string; instagram?: string; whatsapp?: string }
+  data: { nombre?: string; direccion?: string; activa?: boolean; telefono?: string; email?: string; instagram?: string; whatsapp?: string; cerrada_emergencia?: boolean }
 ) {
   const admin = createAdminClient();
   const { error } = await (admin.from("sedes") as any)
@@ -436,6 +436,59 @@ export async function eliminarCliente(id: string) {
   const { error } = await (admin.from("clientes") as any).delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/clientes");
+  return { ok: true };
+}
+
+// ── Horarios por sede ─────────────────────────────────────────────────────
+export type HorarioDia = {
+  sede_id?:        string;
+  dia_semana:      number;
+  abierto:         boolean;
+  periodo1_inicio: string;
+  periodo1_fin:    string;
+  periodo2_inicio?: string | null;
+  periodo2_fin?:   string | null;
+};
+
+export async function guardarHorarioSede(sedeId: string, horarios: HorarioDia[]) {
+  const admin = createAdminClient();
+  const rows = horarios.map(h => ({
+    sede_id:         sedeId,
+    dia_semana:      h.dia_semana,
+    abierto:         h.abierto,
+    periodo1_inicio: h.periodo1_inicio,
+    periodo1_fin:    h.periodo1_fin,
+    periodo2_inicio: h.periodo2_inicio || null,
+    periodo2_fin:    h.periodo2_fin    || null,
+  }));
+  const { error } = await (admin.from("horarios_sedes") as any)
+    .upsert(rows, { onConflict: "sede_id,dia_semana" });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/config");
+  return { ok: true };
+}
+
+// ── Cierres especiales ─────────────────────────────────────────────────────
+export async function crearCierreEspecial(data: {
+  sede_id:      string;
+  fecha_inicio: string;
+  fecha_fin:    string;
+  motivo?:      string;
+}) {
+  const admin = createAdminClient();
+  const { error } = await (admin.from("cierres_especiales") as any)
+    .insert({ ...data, motivo: data.motivo || null });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/config");
+  return { ok: true };
+}
+
+export async function eliminarCierreEspecial(id: string) {
+  const admin = createAdminClient();
+  const { error } = await (admin.from("cierres_especiales") as any)
+    .delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/config");
   return { ok: true };
 }
 

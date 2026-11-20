@@ -7,7 +7,7 @@ import { createReserva } from "@/app/actions/reservas";
 import { esFestivoNacional } from "@/lib/festivos";
 
 // ── Tipos ─────────────────────────────────────────────────────
-type Sede     = { id: string; nombre: string; direccion?: string; orden?: number };
+type Sede     = { id: string; nombre: string; direccion?: string; orden?: number; cerrada_emergencia?: boolean };
 type Barbero  = { id: string; nombre: string; sede_id: string };
 type Servicio = { id: string; nombre: string; categoria: string; duracion_minutos: number; precio: number };
 
@@ -77,6 +77,7 @@ export default function Reservas() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [citaId, setCitaId] = useState<string | null>(null);
+  const [sedeCerrada, setSedeCerrada] = useState<{ cerrada: boolean; motivo?: string } | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof Form | "acepta_privacidad", string>>>({});
   const [ofertaAplicada, setOfertaAplicada] = useState<string | null>(null);
   const [precioOferta,   setPrecioOferta]   = useState<number | null>(null);
@@ -178,10 +179,16 @@ export default function Reservas() {
     if (!barberoId || !fecha) return;
     setLoadingSlots(true);
     setSlots([]);
+    setSedeCerrada(null);
     try {
       const res = await fetch(`/api/reservas/disponibilidad?barbero_id=${barberoId}&fecha=${fecha}`);
-      const { slots: s } = await res.json();
-      setSlots(s ?? []);
+      const data = await res.json();
+      setSlots(data.slots ?? []);
+      if (data.sede_cerrada) {
+        setSedeCerrada({ cerrada: true, motivo: data.motivo });
+      } else {
+        setSedeCerrada({ cerrada: false });
+      }
     } finally {
       setLoadingSlots(false);
     }
@@ -503,17 +510,29 @@ export default function Reservas() {
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => { set("sede_id", s.id); set("barbero_id", ""); }}
-                    className={`p-3 border text-sm text-center transition-all flex flex-col items-center gap-1 ${
-                      form.sede_id === s.id
-                        ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
-                        : "border-[#1f1f1f] text-[#aaa] hover:border-[#333]"
+                    onClick={() => {
+                      if (!s.cerrada_emergencia) {
+                        set("sede_id", s.id);
+                        set("barbero_id", "");
+                      }
+                    }}
+                    className={`p-3 border text-sm text-center transition-all flex flex-col items-center gap-1 relative ${
+                      s.cerrada_emergencia
+                        ? "border-[#2a1a1a] opacity-60 cursor-not-allowed"
+                        : form.sede_id === s.id
+                          ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#C9A84C]"
+                          : "border-[#1f1f1f] text-[#aaa] hover:border-[#333]"
                     }`}
                   >
                     <span className="font-medium">Monastery Barber Studio</span>
                     {s.direccion && (
-                      <span className="text-[11px] leading-tight text-[#C9A84C] font-semibold tracking-wide">
+                      <span className={`text-[11px] leading-tight font-semibold tracking-wide ${s.cerrada_emergencia ? "text-red-400" : "text-[#C9A84C]"}`}>
                         {s.direccion}
+                      </span>
+                    )}
+                    {s.cerrada_emergencia && (
+                      <span className="text-[10px] text-red-400 mt-0.5 tracking-wide">
+                        ⚠ Sin disponibilidad
                       </span>
                     )}
                   </button>
@@ -704,6 +723,29 @@ export default function Reservas() {
             <p className="text-xs tracking-widest text-[#C9A84C] uppercase mb-3">Hora disponible</p>
             {loadingSlots ? (
               <p className="text-[#888] text-sm text-center py-4">Consultando disponibilidad...</p>
+            ) : sedeCerrada?.cerrada ? (
+              <div className="py-4 space-y-3">
+                <p className="text-orange-400 text-sm text-center font-medium">
+                  {sedeCerrada.motivo === "emergencia"
+                    ? "⚠ Esta sede no tiene disponibilidad en este momento"
+                    : `⚠ Esta sede está cerrada en las fechas seleccionadas${sedeCerrada.motivo ? ` (${sedeCerrada.motivo})` : ""}`}
+                </p>
+                {(appData?.sedes.filter(s => s.id !== form.sede_id && !s.cerrada_emergencia) ?? []).length > 0 && (
+                  <div className="border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-3 text-center">
+                    <p className="text-[#aaa] text-xs mb-2">¿Quieres reservar en la otra sede?</p>
+                    {appData!.sedes
+                      .filter(s => s.id !== form.sede_id && !s.cerrada_emergencia)
+                      .map(s => (
+                        <button key={s.id} type="button"
+                          onClick={() => { set("sede_id", s.id); set("barbero_id", ""); set("fecha", ""); set("hora", ""); setSedeCerrada(null); setStep("servicio"); }}
+                          className="text-[#C9A84C] text-sm font-semibold hover:underline">
+                          Cambiar a {s.nombre} {s.direccion ? `(${s.direccion})` : ""}
+                        </button>
+                      ))
+                    }
+                  </div>
+                )}
+              </div>
             ) : slotsMostrar.length === 0 ? (
               <p className="text-[#888] text-sm text-center py-4">
                 {franjaParam === "manana" && slots.length > 0

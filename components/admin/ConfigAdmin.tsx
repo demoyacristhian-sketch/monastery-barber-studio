@@ -4,14 +4,18 @@ import { useState, useTransition, useEffect } from "react";
 import {
   Pencil, Check, X, Plus, Loader2, ToggleLeft, ToggleRight,
   Globe, Bell, CreditCard, Palette, Scissors, Clock, Trash2,
+  AlertTriangle, CalendarX, ShieldAlert,
 } from "lucide-react";
 import {
   actualizarServicio, crearServicio, eliminarServicio,
   actualizarBarbero, crearBarbero, actualizarSede,
+  guardarHorarioSede, crearCierreEspecial, eliminarCierreEspecial,
+  type HorarioDia,
 } from "@/app/actions/admin";
 import BackButton from "./BackButton";
 
-type Sede     = { id: string; nombre: string; direccion: string; activa: boolean; telefono?: string | null; email?: string | null; instagram?: string | null; whatsapp?: string | null };
+type Sede     = { id: string; nombre: string; direccion: string; activa: boolean; cerrada_emergencia?: boolean; telefono?: string | null; email?: string | null; instagram?: string | null; whatsapp?: string | null };
+type CierreEspecial = { id: string; sede_id: string; fecha_inicio: string; fecha_fin: string; motivo?: string | null; created_at?: string };
 type Barbero  = { id: string; nombre: string; email: string; activo: boolean; sede_id: string | null };
 type Servicio = { id: string; nombre: string; precio: number; duracion_minutos: number; categoria: string | null; activo: boolean };
 
@@ -169,73 +173,300 @@ function SeccionInfoNegocio({ sedes }: { sedes: Sede[] }) {
   );
 }
 
-// ── Horarios de apertura ───────────────────────────────────────────────────
-function SeccionHorarios() {
-  const [horarios, setHorarios] = useState(HORARIO_DEFAULT);
-  const [saving, setSaving]     = useState(false);
-  const [ok, setOk]             = useState(false);
+// ── Horarios por sede ─────────────────────────────────────────────────────
+const DIAS_SEMANA = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"] as const;
 
-  useEffect(() => {
-    const saved = localStorage.getItem("monastery_horarios");
-    if (saved) { try { setHorarios(JSON.parse(saved)); } catch {} }
-  }, []);
+function toHHMM(t: string | null | undefined): string {
+  if (!t) return "";
+  return t.slice(0, 5);
+}
 
-  function toggleDia(i: number) {
-    setHorarios(prev => prev.map((h, idx) => idx === i ? { ...h, abierto: !h.abierto } : h));
+function buildHorarioInicial(sedeId: string, rawRows: HorarioDia[]): HorarioDia[] {
+  const porDia = new Map(rawRows.filter(r => r.sede_id === sedeId).map(r => [r.dia_semana, r]));
+  return [0,1,2,3,4,5,6].map(dia => {
+    const r = porDia.get(dia);
+    if (r) return {
+      ...r,
+      periodo1_inicio: toHHMM(r.periodo1_inicio),
+      periodo1_fin:    toHHMM(r.periodo1_fin),
+      periodo2_inicio: toHHMM(r.periodo2_inicio),
+      periodo2_fin:    toHHMM(r.periodo2_fin),
+    };
+    // Defaults: dom cerrado, lun-vie 10-14/16-20, sáb 10-19
+    if (dia === 0) return { dia_semana: 0, abierto: false, periodo1_inicio: "10:00", periodo1_fin: "14:00", periodo2_inicio: null, periodo2_fin: null };
+    if (dia === 6) return { dia_semana: 6, abierto: true,  periodo1_inicio: "10:00", periodo1_fin: "19:00", periodo2_inicio: null,    periodo2_fin: null };
+    return { dia_semana: dia, abierto: true, periodo1_inicio: "10:00", periodo1_fin: "14:00", periodo2_inicio: "16:00", periodo2_fin: "20:00" };
+  });
+}
+
+function HorarioDiaRow({ horario, onChange }: { horario: HorarioDia; onChange: (h: HorarioDia) => void }) {
+  const { dia_semana, abierto, periodo1_inicio, periodo1_fin, periodo2_inicio, periodo2_fin } = horario;
+  const esDomingo = dia_semana === 0;
+  const tienePartido = !!(periodo2_inicio && periodo2_fin);
+
+  if (esDomingo) return (
+    <div className="flex items-center gap-3 py-2">
+      <div className="relative inline-flex w-10 h-5 rounded-full bg-zinc-200 flex-shrink-0 opacity-40 cursor-not-allowed">
+        <span className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white" />
+      </div>
+      <span className="text-sm text-zinc-500 w-24 flex-shrink-0">{DIAS_SEMANA[dia_semana]}</span>
+      <span className="text-sm text-zinc-400">Cerrado</span>
+    </div>
+  );
+
+  return (
+    <div className="flex items-start gap-3 py-2 flex-wrap">
+      <button onClick={() => onChange({ ...horario, abierto: !abierto })}
+        className={`relative inline-flex w-10 h-5 rounded-full transition-colors flex-shrink-0 mt-0.5 ${abierto ? "bg-[#C9A84C]" : "bg-zinc-200"}`}>
+        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${abierto ? "translate-x-5" : "translate-x-0"}`} />
+      </button>
+      <span className="text-sm text-zinc-700 w-24 flex-shrink-0 mt-0.5">{DIAS_SEMANA[dia_semana]}</span>
+
+      {!abierto ? (
+        <span className="text-sm text-zinc-400 mt-0.5">Cerrado</span>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <input type="time" value={periodo1_inicio}
+              onChange={e => onChange({ ...horario, periodo1_inicio: e.target.value })}
+              className="px-2 py-1 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900 w-24" />
+            <span className="text-zinc-300 text-xs">—</span>
+            <input type="time" value={periodo1_fin}
+              onChange={e => onChange({ ...horario, periodo1_fin: e.target.value })}
+              className="px-2 py-1 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900 w-24" />
+            <button
+              onClick={() => onChange({ ...horario,
+                periodo2_inicio: tienePartido ? null : "16:00",
+                periodo2_fin:    tienePartido ? null : "20:00",
+              })}
+              className={`px-2 py-1 text-[11px] rounded-lg border transition-colors ${
+                tienePartido ? "border-[#C9A84C] text-[#C9A84C] bg-[#C9A84C]/5" : "border-zinc-200 text-zinc-400 hover:border-zinc-300"
+              }`}
+              title="Horario partido (turno tarde)">
+              {tienePartido ? "Con tarde" : "+ Tarde"}
+            </button>
+          </div>
+          {tienePartido && (
+            <div className="flex items-center gap-1.5 pl-0">
+              <span className="text-[11px] text-zinc-400 w-24">Tarde:</span>
+              <input type="time" value={periodo2_inicio ?? ""}
+                onChange={e => onChange({ ...horario, periodo2_inicio: e.target.value })}
+                className="px-2 py-1 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900 w-24" />
+              <span className="text-zinc-300 text-xs">—</span>
+              <input type="time" value={periodo2_fin ?? ""}
+                onChange={e => onChange({ ...horario, periodo2_fin: e.target.value })}
+                className="px-2 py-1 text-xs border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900 w-24" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SeccionCierresEspeciales({ sedeId, cierresIniciales }: { sedeId: string; cierresIniciales: CierreEspecial[] }) {
+  const [items, setItems] = useState(cierresIniciales);
+  const [form, setForm]   = useState({ fecha_inicio: "", fecha_fin: "", motivo: "" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState<string | null>(null);
+
+  async function añadir() {
+    if (!form.fecha_inicio || !form.fecha_fin) return;
+    if (form.fecha_fin < form.fecha_inicio) { setError("La fecha fin debe ser igual o posterior al inicio"); return; }
+    setError(null);
+    setSaving(true);
+    const res = await crearCierreEspecial({ sede_id: sedeId, ...form, motivo: form.motivo || undefined });
+    if (res.ok) {
+      setItems(p => [...p, { id: Date.now().toString(), sede_id: sedeId, fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, motivo: form.motivo || null }]);
+      setForm({ fecha_inicio: "", fecha_fin: "", motivo: "" });
+    } else { setError(res.error ?? "Error al guardar"); }
+    setSaving(false);
   }
-  function setHora(i: number, campo: "apertura" | "cierre", valor: string) {
-    setHorarios(prev => prev.map((h, idx) => idx === i ? { ...h, [campo]: valor } : h));
+
+  async function borrar(id: string) {
+    if (!confirm("¿Eliminar este cierre especial?")) return;
+    const res = await eliminarCierreEspecial(id);
+    if (res.ok) setItems(p => p.filter(c => c.id !== id));
+  }
+
+  function fmt(iso: string) {
+    return new Date(iso + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  return (
+    <div className="border-t border-zinc-100 pt-5 mt-4">
+      <div className="flex items-center gap-2 mb-3">
+        <CalendarX className="w-3.5 h-3.5 text-zinc-400" />
+        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">Cierres especiales</p>
+      </div>
+
+      {/* Formulario añadir */}
+      <div className="flex flex-wrap items-end gap-2 mb-3">
+        <div>
+          <label className="block text-[10px] text-zinc-400 mb-1">Desde</label>
+          <input type="date" value={form.fecha_inicio} onChange={e => setForm(p => ({ ...p, fecha_inicio: e.target.value }))}
+            className="px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900" />
+        </div>
+        <div>
+          <label className="block text-[10px] text-zinc-400 mb-1">Hasta</label>
+          <input type="date" value={form.fecha_fin} onChange={e => setForm(p => ({ ...p, fecha_fin: e.target.value }))}
+            min={form.fecha_inicio}
+            className="px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900" />
+        </div>
+        <div className="flex-1 min-w-32">
+          <label className="block text-[10px] text-zinc-400 mb-1">Motivo (opcional)</label>
+          <input type="text" value={form.motivo} placeholder="Vacaciones, festivo…"
+            onChange={e => setForm(p => ({ ...p, motivo: e.target.value }))}
+            className="w-full px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900" />
+        </div>
+        <button onClick={añadir} disabled={saving || !form.fecha_inicio || !form.fecha_fin}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-700 text-white text-xs rounded-lg transition-colors disabled:opacity-40">
+          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+          Añadir cierre
+        </button>
+      </div>
+      {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
+
+      {items.length === 0 ? (
+        <p className="text-xs text-zinc-400 py-2">Sin cierres programados</p>
+      ) : (
+        <div className="space-y-1.5">
+          {items.map(c => (
+            <div key={c.id} className="flex items-center justify-between gap-3 px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-zinc-800">{fmt(c.fecha_inicio)}</span>
+                {c.fecha_inicio !== c.fecha_fin && <><span className="text-zinc-400">—</span><span className="font-medium text-zinc-800">{fmt(c.fecha_fin)}</span></>}
+                {c.motivo && <span className="text-zinc-500 text-xs">· {c.motivo}</span>}
+              </div>
+              <button onClick={() => borrar(c.id)} className="p-1 text-zinc-400 hover:text-red-500 transition-colors flex-shrink-0">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SeccionHorariosSedes({
+  sedes,
+  horariosRaw,
+  cierresRaw,
+}: {
+  sedes: Sede[];
+  horariosRaw: HorarioDia[];
+  cierresRaw: CierreEspecial[];
+}) {
+  const [tabIdx, setTabIdx] = useState(0);
+  const sede = sedes[tabIdx] ?? null;
+
+  // Per-sede horarios state
+  const [horariosPorSede, setHorariosPorSede] = useState<Record<string, HorarioDia[]>>(() =>
+    Object.fromEntries(sedes.map(s => [s.id, buildHorarioInicial(s.id, horariosRaw)]))
+  );
+  const [saving, setSaving]       = useState(false);
+  const [okSede, setOkSede]       = useState<string | null>(null);
+  const [emergencia, setEmergencia] = useState<Record<string, boolean>>(
+    Object.fromEntries(sedes.map(s => [s.id, s.cerrada_emergencia ?? false]))
+  );
+  const [savingEmerg, setSavingEmerg] = useState<string | null>(null);
+
+  if (!sede) return null;
+
+  const horariosSede = horariosPorSede[sede.id] ?? buildHorarioInicial(sede.id, horariosRaw);
+  const cierresSede  = cierresRaw.filter(c => c.sede_id === sede.id);
+
+  function updateDia(dia_semana: number, h: HorarioDia) {
+    setHorariosPorSede(prev => ({
+      ...prev,
+      [sede.id]: prev[sede.id].map(d => d.dia_semana === dia_semana ? h : d),
+    }));
   }
 
   async function guardar() {
     setSaving(true);
-    localStorage.setItem("monastery_horarios", JSON.stringify(horarios));
-    await new Promise(r => setTimeout(r, 400));
+    const res = await guardarHorarioSede(sede.id, horariosSede);
     setSaving(false);
-    setOk(true);
-    setTimeout(() => setOk(false), 2000);
+    if (res.ok) { setOkSede(sede.id); setTimeout(() => setOkSede(null), 2000); }
+  }
+
+  async function toggleEmergencia() {
+    const nueva = !emergencia[sede.id];
+    setSavingEmerg(sede.id);
+    const res = await actualizarSede(sede.id, { cerrada_emergencia: nueva });
+    setSavingEmerg(null);
+    if (res.ok) setEmergencia(prev => ({ ...prev, [sede.id]: nueva }));
   }
 
   return (
     <div className="bg-white border border-zinc-200 rounded-2xl p-6">
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-2 mb-4">
         <Clock className="w-4 h-4 text-[#C9A84C]" />
-        <h2 className="font-semibold text-zinc-900">Horarios de apertura</h2>
+        <h2 className="font-semibold text-zinc-900">Horarios y disponibilidad</h2>
       </div>
-      <div className="space-y-3">
-        {horarios.map((h, i) => (
-          <div key={h.dia} className="flex items-center gap-4 flex-wrap">
-            {/* Toggle */}
-            <button onClick={() => toggleDia(i)}
-              className={`relative inline-flex w-11 h-6 rounded-full transition-colors flex-shrink-0 ${h.abierto ? "bg-[#C9A84C]" : "bg-zinc-200"}`}>
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${h.abierto ? "translate-x-5" : "translate-x-0"}`} />
+
+      {/* Pestañas por sede */}
+      {sedes.length > 1 && (
+        <div className="flex gap-0 mb-5 border-b border-zinc-100">
+          {sedes.map((s, i) => (
+            <button key={s.id} onClick={() => setTabIdx(i)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                tabIdx === i ? "border-[#C9A84C] text-[#C9A84C]" : "border-transparent text-zinc-400 hover:text-zinc-700"
+              }`}>
+              {s.nombre}
+              {emergencia[s.id] && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-red-500 mb-0.5" />}
             </button>
+          ))}
+        </div>
+      )}
 
-            {/* Día */}
-            <span className="text-sm text-zinc-700 w-20 flex-shrink-0">{h.dia}</span>
-
-            {/* Horas */}
-            {h.abierto ? (
-              <div className="flex items-center gap-2">
-                <input type="time" value={h.apertura}
-                  onChange={e => setHora(i, "apertura", e.target.value)}
-                  className="px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900 w-28" />
-                <span className="text-zinc-300">—</span>
-                <input type="time" value={h.cierre}
-                  onChange={e => setHora(i, "cierre", e.target.value)}
-                  className="px-2.5 py-1.5 text-sm border border-zinc-200 rounded-lg focus:outline-none focus:border-[#C9A84C] bg-white text-zinc-900 w-28" />
-              </div>
-            ) : (
-              <span className="text-sm text-zinc-400">Cerrado</span>
-            )}
+      {/* Cierre de emergencia */}
+      <div className={`flex items-start justify-between gap-4 p-4 rounded-xl mb-5 border ${
+        emergencia[sede.id] ? "border-red-200 bg-red-50" : "border-zinc-100 bg-zinc-50"
+      }`}>
+        <div className="flex items-start gap-3">
+          <ShieldAlert className={`w-4 h-4 mt-0.5 flex-shrink-0 ${emergencia[sede.id] ? "text-red-500" : "text-zinc-400"}`} />
+          <div>
+            <p className={`text-sm font-semibold ${emergencia[sede.id] ? "text-red-700" : "text-zinc-700"}`}>
+              Cierre de emergencia
+            </p>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {emergencia[sede.id]
+                ? "⚠️ Agenda cerrada — los clientes ven esta sede sin disponibilidad"
+                : "Cierra inmediatamente toda la agenda de esta sede"}
+            </p>
           </div>
+        </div>
+        <button onClick={toggleEmergencia} disabled={savingEmerg === sede.id}
+          className="flex items-center gap-2 flex-shrink-0">
+          {savingEmerg === sede.id
+            ? <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
+            : emergencia[sede.id]
+              ? <ToggleRight className="w-6 h-6 text-red-500" />
+              : <ToggleLeft  className="w-6 h-6 text-zinc-300" />
+          }
+          <span className={`text-xs font-medium ${emergencia[sede.id] ? "text-red-600" : "text-zinc-400"}`}>
+            {emergencia[sede.id] ? "Activado" : "Desactivado"}
+          </span>
+        </button>
+      </div>
+
+      {/* Horarios por día */}
+      <div className="space-y-1 mb-5">
+        {horariosSede.map(h => (
+          <HorarioDiaRow key={h.dia_semana} horario={h} onChange={updated => updateDia(h.dia_semana, updated)} />
         ))}
       </div>
+
       <button onClick={guardar} disabled={saving}
-        className="mt-6 flex items-center gap-2 px-5 py-2.5 bg-[#C9A84C] hover:bg-[#B8964A] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50">
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : ok ? <Check className="w-4 h-4" /> : null}
-        {ok ? "¡Guardado!" : "Guardar horarios"}
+        className="flex items-center gap-2 px-5 py-2.5 bg-[#C9A84C] hover:bg-[#B8964A] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50">
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : okSede === sede.id ? <Check className="w-4 h-4" /> : null}
+        {okSede === sede.id ? "¡Horarios guardados!" : "Guardar horarios"}
       </button>
+
+      {/* Cierres especiales */}
+      <SeccionCierresEspeciales sedeId={sede.id} cierresIniciales={cierresSede} />
     </div>
   );
 }
@@ -807,8 +1038,9 @@ function SeccionUsuarios() {
 }
 
 // ── Export principal ───────────────────────────────────────────────────────
-export default function ConfigAdmin({ sedes, barberos, servicios }: {
+export default function ConfigAdmin({ sedes, barberos, servicios, horarios = [], cierres = [] }: {
   sedes: Sede[]; barberos: Barbero[]; servicios: Servicio[];
+  horarios?: HorarioDia[]; cierres?: CierreEspecial[];
 }) {
   return (
     <div className="p-6 space-y-6">
@@ -819,7 +1051,7 @@ export default function ConfigAdmin({ sedes, barberos, servicios }: {
       </div>
 
       <SeccionInfoNegocio sedes={sedes} />
-      <SeccionHorarios />
+      <SeccionHorariosSedes sedes={sedes} horariosRaw={horarios} cierresRaw={cierres} />
       <GridTarjetas />
 
       <div className="pt-2 space-y-8">
