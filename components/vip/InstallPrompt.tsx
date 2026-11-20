@@ -51,6 +51,8 @@ export default function InstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
+  const [showAndroidGuide, setShowAndroidGuide] = useState(false);
+
   async function handleInstall() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -62,6 +64,9 @@ export default function InstallPrompt() {
       }
     } else if (platform === "ios") {
       setShowIosGuide(true);
+    } else {
+      // Android: deferredPrompt not ready → show manual guide
+      setShowAndroidGuide(true);
     }
   }
 
@@ -148,6 +153,50 @@ export default function InstallPrompt() {
           </button>
         </div>
       </div>
+
+      {/* Android manual guide modal */}
+      {showAndroidGuide && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}>
+          <div className="w-full max-w-sm rounded-2xl overflow-hidden"
+            style={{ background: isLight ? "#FFFFFF" : "#0d0d0d", border: "1px solid rgba(201,168,76,0.2)" }}>
+            <div className="flex items-center justify-between px-5 py-4"
+              style={{ borderBottom: "1px solid rgba(201,168,76,0.12)" }}>
+              <p className="font-bold text-sm" style={{ color: textPrimary }}>Instalar en Android</p>
+              <button onClick={() => setShowAndroidGuide(false)} style={{ color: textMuted }}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-5 py-5 space-y-4">
+              {[
+                { n: "1", title: "Abre el menú de Chrome", desc: 'Toca los tres puntos ⋮ en la esquina superior derecha' },
+                { n: "2", title: 'Busca "Instalar app"', desc: '"Añadir a pantalla de inicio" también funciona' },
+                { n: "3", title: "Confirma la instalación", desc: "La app aparece en tu pantalla de inicio" },
+              ].map(step => (
+                <div key={step.n} className="flex gap-3 items-start">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                    style={{ background: "rgba(201,168,76,0.1)", color: "#C9A84C" }}>
+                    {step.n}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: textPrimary }}>{step.title}</p>
+                    <p className="text-xs" style={{ color: textMuted }}>{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="mt-2 p-3 rounded-xl text-xs text-center"
+                style={{ background: "rgba(201,168,76,0.07)", color: "#C9A84C" }}>
+                ⚠️ Debe abrirse en Chrome para poder instalar
+              </div>
+              <button onClick={() => { setShowAndroidGuide(false); dismiss(); }}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ background: "rgba(201,168,76,0.12)", color: "#C9A84C" }}>
+                Entendido, lo haré después
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* iOS guide modal */}
       {showIosGuide && (
