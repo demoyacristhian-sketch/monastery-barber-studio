@@ -49,17 +49,17 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center pb-20 sm:pb-0">
-        <p className="text-[#888] text-sm">Cargando...</p>
+      <main className="min-h-screen flex items-center justify-center pb-20 sm:pb-0" style={{ background: "var(--vip-bg)" }}>
+        <p className="text-sm" style={{ color: "var(--vip-muted)" }}>Cargando...</p>
       </main>
     );
   }
 
   if (!cliente) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center pb-20 sm:pb-0">
+      <main className="min-h-screen flex items-center justify-center pb-20 sm:pb-0" style={{ background: "var(--vip-bg)" }}>
         <div className="text-center">
-          <p className="text-[#888] text-sm mb-4">Perfil no encontrado.</p>
+          <p className="text-sm mb-4" style={{ color: "var(--vip-muted)" }}>Perfil no encontrado.</p>
           <Link href="/espacio-vip/reservar" className="btn-gold inline-flex text-sm">Reservar primera cita →</Link>
         </div>
       </main>
@@ -70,7 +70,7 @@ export default function PerfilPage() {
   const nivelColor = nivel === "Black" ? "#888" : nivel === "Gold" ? "#C9A84C" : nivel === "Silver" ? "#aaa" : "#555";
 
   return (
-    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
+    <main className="min-h-screen pt-6 pb-24 sm:py-10 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
       <div className="max-w-2xl mx-auto space-y-8">
 
         {/* Header */}
@@ -82,11 +82,11 @@ export default function PerfilPage() {
 
         {/* Avatar + nivel */}
         <div className="card-premium p-6 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-[#1a1a1a] border border-[#222] flex items-center justify-center text-xl font-bold text-[#C9A84C] shrink-0">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-[#C9A84C] shrink-0" style={{ background: "var(--vip-bg-sec)", border: "1px solid var(--vip-border)" }}>
             {cliente.nombre?.[0]?.toUpperCase() ?? "?"}
           </div>
           <div>
-            <p className="text-white font-semibold text-lg">{cliente.nombre}</p>
+            <p className="font-semibold text-lg" style={{ color: "var(--vip-text)" }}>{cliente.nombre}</p>
             <p className="text-[#888] text-xs">{cliente.email}</p>
             {nivel && (
               <span className="text-xs mt-1.5 inline-block px-2 py-0.5 border" style={{ color: nivelColor, borderColor: nivelColor + "40" }}>
@@ -115,7 +115,8 @@ export default function PerfilPage() {
                 value={nombre}
                 onChange={e => setNombre(e.target.value)}
                 required
-                className="w-full bg-[#0a0a0a] border border-[#222] text-white px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/40 placeholder:text-[#777]"
+                className="w-full px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/40"
+                style={{ background: "var(--vip-bg-card)", border: "1px solid var(--vip-border)", color: "var(--vip-text)" }}
               />
             </div>
 
@@ -127,7 +128,8 @@ export default function PerfilPage() {
                 type="email"
                 value={cliente.email ?? ""}
                 disabled
-                className="w-full bg-[#050505] border border-[#111] text-[#888] px-3 py-2.5 text-sm cursor-not-allowed"
+                className="w-full px-3 py-2.5 text-sm cursor-not-allowed"
+                style={{ background: "var(--vip-bg)", border: "1px solid var(--vip-border)", color: "var(--vip-muted)" }}
               />
               <p className="text-[#777] text-xs mt-1">El email no se puede cambiar</p>
             </div>
@@ -141,7 +143,8 @@ export default function PerfilPage() {
                 value={telefono}
                 onChange={e => setTelefono(e.target.value)}
                 placeholder="612 345 678"
-                className="w-full bg-[#0a0a0a] border border-[#222] text-white px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/40 placeholder:text-[#777]"
+                className="w-full px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/40"
+                style={{ background: "var(--vip-bg-card)", border: "1px solid var(--vip-border)", color: "var(--vip-text)" }}
               />
             </div>
 
@@ -153,7 +156,8 @@ export default function PerfilPage() {
                 type="date"
                 value={fnac}
                 onChange={e => setFnac(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-[#222] text-white px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/40"
+                className="w-full px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/40"
+                style={{ background: "var(--vip-bg-card)", border: "1px solid var(--vip-border)", color: "var(--vip-text)" }}
               />
               <p className="text-[#777] text-xs mt-1">Para tu regalo de cumpleaños</p>
             </div>
@@ -180,7 +184,7 @@ export default function PerfilPage() {
           <p className="section-label">Estadísticas</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">{cliente.total_visitas ?? 0}</p>
+              <p className="text-2xl font-bold" style={{ color: "var(--vip-text)" }}>{cliente.total_visitas ?? 0}</p>
               <p className="text-[#888] text-xs mt-1">Visitas totales</p>
             </div>
             <div className="text-center">

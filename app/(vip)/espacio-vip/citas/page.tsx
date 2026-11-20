@@ -46,14 +46,14 @@ export default async function MisCitasPage() {
   const pasadas  = pasadasRes.data  ?? [];
 
   return (
-    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
+    <main className="min-h-screen pt-6 pb-24 sm:py-10 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
       <div className="max-w-3xl mx-auto space-y-10">
 
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <p className="section-label mb-1">Gestión de citas</p>
-            <h1 className="font-serif text-3xl font-bold">Mis citas</h1>
+            <h1 className="font-serif text-3xl font-bold" style={{ color: "var(--vip-text)" }}>Mis citas</h1>
             <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
           </div>
           <Link href="/espacio-vip/reservar" className="btn-gold text-sm inline-flex shrink-0">
@@ -84,7 +84,7 @@ export default async function MisCitasPage() {
         <div>
           <p className="section-label mb-4">Historial de visitas ({pasadas.length})</p>
           {pasadas.length === 0 ? (
-            <p className="text-[#888] text-sm text-center py-8">Aún no tienes visitas registradas.</p>
+            <p className="text-sm text-center py-8" style={{ color: "var(--vip-muted)" }}>Aún no tienes visitas registradas.</p>
           ) : (
             <div className="space-y-3">
               {pasadas.map((c: any) => (

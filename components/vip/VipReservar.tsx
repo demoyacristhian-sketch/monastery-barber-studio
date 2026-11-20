@@ -295,7 +295,7 @@ export default function VipReservar() {
 
   // ── PASO: SERVICIO ─────────────────────────────────────────────
   if (step === "servicio") return (
-    <section className="py-8 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
+    <section className="pt-8 pb-28 sm:pb-10 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
       <div className="max-w-xl mx-auto">
         <BackBtn to="dashboard" />
         <Header label="Tu visita" title={<>Sede, barbero <span className="gold-text">y servicio</span></>} />
@@ -438,7 +438,7 @@ export default function VipReservar() {
 
   // ── PASO: FECHA ────────────────────────────────────────────────
   if (step === "fecha") return (
-    <section className="py-8 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
+    <section className="pt-8 pb-28 sm:pb-10 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
       <div className="max-w-xl mx-auto">
         <BackBtn to="servicio" />
         <Header label="Elige tu momento" title={<>Fecha <span className="gold-text">y hora</span></>} />
@@ -562,7 +562,7 @@ export default function VipReservar() {
 
   // ── PASO: CONFIRMAR ────────────────────────────────────────────
   if (step === "confirmar") return (
-    <section className="py-8 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
+    <section className="pt-8 pb-28 sm:pb-10 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
       <div className="max-w-lg mx-auto">
         <BackBtn to="fecha" />
         <Header label="Último paso" title={<>Confirma tu <span className="gold-text">reserva</span></>} />
@@ -654,7 +654,7 @@ export default function VipReservar() {
 
   // ── PASO: ÉXITO ────────────────────────────────────────────────
   return (
-    <section className="py-16 px-6 min-h-screen flex items-center" style={{ background: bg }}>
+    <section className="pt-16 pb-28 sm:pb-10 px-6 min-h-screen flex items-center" style={{ background: bg }}>
       <div className="max-w-md mx-auto text-center w-full">
         <div className="rounded-2xl p-10" style={{ border: `1px solid ${gold}30`, background: bgCard }}>
           <div className="text-5xl mb-6">✦</div>
