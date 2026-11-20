@@ -23,7 +23,33 @@ export default async function MisCitasPage() {
     .maybeSingle();
 
   const cliente = clienteRaw as { id: string; nombre: string } | null;
-  if (!cliente) redirect("/espacio-vip");
+
+  if (!cliente) {
+    return (
+      <main className="min-h-screen pt-6 pb-24 sm:py-10 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
+        <div className="max-w-3xl mx-auto space-y-8">
+          <div>
+            <p className="section-label mb-1">Gestión de citas</p>
+            <h1 className="font-serif text-3xl font-bold" style={{ color: "var(--vip-text)" }}>Mis citas</h1>
+            <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
+          </div>
+          <div className="card-premium p-10 text-center">
+            <p className="text-sm mb-6" style={{ color: "var(--vip-muted)" }}>
+              Activa tu perfil VIP para ver y gestionar tus citas.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/espacio-vip/perfil" className="inline-flex btn-gold text-sm">
+                Activar perfil →
+              </Link>
+              <Link href="/espacio-vip/reservar" className="inline-flex btn-outline text-sm">
+                Reservar primera cita
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const ahora = new Date().toISOString();
 

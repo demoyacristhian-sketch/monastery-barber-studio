@@ -4,19 +4,36 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 
-// ── Helper: obtiene cliente autenticado ───────────────────────────────────
+// ── Helper: obtiene cliente autenticado (con fallback por email) ──────────
 async function getClienteAutenticado() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { user: null, cliente: null };
 
   const admin = createAdminClient();
-  const { data } = await (admin.from("clientes") as any)
+
+  // 1. Buscar por auth_user_id
+  const { data: porAuth } = await (admin.from("clientes") as any)
     .select("*")
     .eq("auth_user_id", user.id)
-    .single();
+    .maybeSingle();
+  if (porAuth) return { user, cliente: porAuth };
 
-  return { user, cliente: data ?? null };
+  // 2. Fallback: buscar por email y vincular auth_user_id automáticamente
+  if (user.email) {
+    const { data: porEmail } = await (admin.from("clientes") as any)
+      .select("*")
+      .eq("email", user.email)
+      .maybeSingle();
+    if (porEmail) {
+      await (admin.from("clientes") as any)
+        .update({ auth_user_id: user.id })
+        .eq("id", porEmail.id);
+      return { user, cliente: { ...porEmail, auth_user_id: user.id } };
+    }
+  }
+
+  return { user, cliente: null };
 }
 
 // ── Confirmar cita ────────────────────────────────────────────────────────
@@ -123,6 +140,71 @@ export async function actualizarPerfilCliente(data: {
   revalidatePath("/espacio-vip");
   revalidatePath("/espacio-vip/perfil");
   return { ok: true };
+}
+
+// ── Obtener perfil propio (admin client, sin RLS) ─────────────────────────
+export async function fetchMiPerfil() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { user: null, cliente: null };
+
+  const admin = createAdminClient();
+
+  const { data: porAuth } = await (admin.from("clientes") as any)
+    .select("*")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (porAuth) return { user: { id: user.id, email: user.email }, cliente: porAuth };
+
+  if (user.email) {
+    const { data: porEmail } = await (admin.from("clientes") as any)
+      .select("*")
+      .eq("email", user.email)
+      .maybeSingle();
+    if (porEmail) {
+      await (admin.from("clientes") as any)
+        .update({ auth_user_id: user.id })
+        .eq("id", porEmail.id);
+      return { user: { id: user.id, email: user.email }, cliente: { ...porEmail, auth_user_id: user.id } };
+    }
+  }
+
+  return { user: { id: user.id, email: user.email }, cliente: null };
+}
+
+// ── Crear perfil desde el Espacio VIP ────────────────────────────────────
+export async function crearPerfil(data: {
+  nombre: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "No autenticado" };
+
+  const admin = createAdminClient();
+
+  const { data: existing } = await (admin.from("clientes") as any)
+    .select("id")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (existing) return { ok: false as const, error: "Ya tienes un perfil" };
+
+  const { error } = await (admin.from("clientes") as any)
+    .insert({
+      auth_user_id:     user.id,
+      email:            user.email,
+      nombre:           data.nombre,
+      telefono:         data.telefono || null,
+      fecha_nacimiento: data.fecha_nacimiento || null,
+      activo:           true,
+    });
+
+  if (error) return { ok: false as const, error: error.message };
+
+  revalidatePath("/espacio-vip");
+  revalidatePath("/espacio-vip/perfil");
+  return { ok: true as const };
 }
 
 // ── Marcar notificaciones CRM como leídas ────────────────────────────────
