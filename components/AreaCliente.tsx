@@ -152,7 +152,7 @@ function AreaClienteNuevo({ email }: { email: string }) {
           <p className="text-sm mt-4 mb-8" style={{ color: "var(--vip-muted)" }}>
             Reserva tu primera cita para activar tu perfil completo en el Espacio VIP.
           </p>
-          <Link href="/reservas" className="inline-flex btn-gold">
+          <Link href="/espacio-vip/reservar" className="inline-flex btn-gold">
             Reservar primera cita →
           </Link>
         </div>
@@ -192,7 +192,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
             </h2>
             <div className="h-px w-16 bg-[#C9A84C]/50 mt-3" />
           </div>
-          <Link href="/reservas" className="inline-flex btn-gold text-sm self-start shrink-0">
+          <Link href="/espacio-vip/reservar" className="inline-flex btn-gold text-sm self-start shrink-0">
             + Nueva reserva
           </Link>
         </div>
@@ -261,7 +261,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
           {proximas.length === 0 ? (
             <div className="card-premium p-8 text-center">
               <p className="text-sm mb-4" style={{ color: "var(--vip-muted)" }}>No tienes citas próximas.</p>
-              <Link href="/reservas" className="inline-flex btn-gold text-sm">
+              <Link href="/espacio-vip/reservar" className="inline-flex btn-gold text-sm">
                 Reservar ahora →
               </Link>
             </div>
@@ -318,7 +318,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
             </div>
             <ChevronRight className="w-4 h-4 ml-auto text-[#C9A84C] group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <Link href="/reservas" className="btn-gold flex items-center justify-center text-sm py-4">
+          <Link href="/espacio-vip/reservar" className="btn-gold flex items-center justify-center text-sm py-4">
             + Nueva reserva
           </Link>
         </div>

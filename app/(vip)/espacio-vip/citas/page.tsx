@@ -56,7 +56,7 @@ export default async function MisCitasPage() {
             <h1 className="font-serif text-3xl font-bold">Mis citas</h1>
             <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
           </div>
-          <Link href="/reservas" className="btn-gold text-sm inline-flex shrink-0">
+          <Link href="/espacio-vip/reservar" className="btn-gold text-sm inline-flex shrink-0">
             + Nueva reserva
           </Link>
         </div>
@@ -67,7 +67,7 @@ export default async function MisCitasPage() {
           {proximas.length === 0 ? (
             <div className="card-premium p-8 text-center">
               <p className="text-[#888] text-sm mb-4">No tienes citas próximas.</p>
-              <Link href="/reservas" className="inline-flex btn-gold text-sm">
+              <Link href="/espacio-vip/reservar" className="inline-flex btn-gold text-sm">
                 Reservar ahora →
               </Link>
             </div>

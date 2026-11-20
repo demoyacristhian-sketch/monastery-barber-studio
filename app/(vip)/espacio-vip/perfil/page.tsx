@@ -60,7 +60,7 @@ export default function PerfilPage() {
       <main className="min-h-screen bg-black flex items-center justify-center pb-20 sm:pb-0">
         <div className="text-center">
           <p className="text-[#888] text-sm mb-4">Perfil no encontrado.</p>
-          <Link href="/reservas" className="btn-gold inline-flex text-sm">Reservar primera cita →</Link>
+          <Link href="/espacio-vip/reservar" className="btn-gold inline-flex text-sm">Reservar primera cita →</Link>
         </div>
       </main>
     );

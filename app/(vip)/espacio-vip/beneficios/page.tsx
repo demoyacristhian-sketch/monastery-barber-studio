@@ -222,7 +222,7 @@ export default async function BeneficiosPage() {
           <p className="text-[#999] text-sm mb-6 max-w-sm mx-auto">
             Reserva ahora y aplica automáticamente tus beneficios de miembro.
           </p>
-          <Link href="/reservas" className="btn-gold inline-flex">
+          <Link href="/espacio-vip/reservar" className="btn-gold inline-flex">
             Reservar cita →
           </Link>
         </div>

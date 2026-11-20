@@ -18,7 +18,7 @@
       "name": "Nueva reserva",
       "short_name": "Reservar",
       "description": "Reserva tu próxima cita",
-      "url": "/reservas",
+      "url": "/espacio-vip/reservar",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
