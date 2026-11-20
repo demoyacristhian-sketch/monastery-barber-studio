@@ -23,6 +23,10 @@ export async function generateMetadata(): Promise<Metadata> {
       statusBarStyle: "black-translucent",
       title: "Monastery VIP",
     },
+    // Next.js only genera mobile-web-app-capable; forzamos el tag de iOS explícitamente
+    other: {
+      "apple-mobile-web-app-capable": "yes",
+    },
     icons: {
       apple: "/icons/icon-192.png",
     },
