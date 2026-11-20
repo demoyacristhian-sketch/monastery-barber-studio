@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 type Mode = "login" | "register" | "forgot_password";
 
@@ -12,6 +13,7 @@ export default function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -178,13 +180,25 @@ export default function AuthForm() {
 
         <div>
           <label>Contraseña</label>
-          <input
-            type="password"
-            placeholder={mode === "register" ? "Mínimo 6 caracteres" : "••••••••"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder={mode === "register" ? "Mínimo 6 caracteres" : "••••••••"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] hover:text-[#C9A84C] transition-colors"
+              tabIndex={-1}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         {mode === "register" && (
