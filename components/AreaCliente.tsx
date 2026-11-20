@@ -11,6 +11,9 @@ type CitaVip = {
   fecha_hora: string;
   estado: string;
   precio_final: number | null;
+  barbero_id?: string | null;
+  servicio_id?: string | null;
+  sede_id?: string | null;
   reagendar_solicitado?: boolean;
   reagendar_motivo?: string;
   servicios: { nombre: string } | null;
@@ -45,7 +48,7 @@ async function getDashboardData(userId: string) {
 
   const [proximasRes, pasadasRes, membresiaRes] = await Promise.all([
     (admin.from("citas") as any)
-      .select("id, fecha_hora, estado, precio_final, reagendar_solicitado, reagendar_motivo, servicios(nombre), barberos(nombre), sedes(nombre)")
+      .select("id, fecha_hora, estado, precio_final, reagendar_solicitado, reagendar_motivo, barbero_id, servicio_id, sede_id, servicios(nombre), barberos(nombre), sedes(nombre)")
       .eq("cliente_id", cliente.id)
       .gte("fecha_hora", ahora)
       .not("estado", "in", '("cancelada","completada")')

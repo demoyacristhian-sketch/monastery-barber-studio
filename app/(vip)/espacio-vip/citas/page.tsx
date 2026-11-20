@@ -55,7 +55,7 @@ export default async function MisCitasPage() {
 
   const [proximasRes, pasadasRes] = await Promise.all([
     (admin.from("citas") as any)
-      .select("id, fecha_hora, estado, precio_final, notas_cliente, reagendar_solicitado, reagendar_motivo, servicios(nombre), barberos(nombre), sedes(nombre)")
+      .select("id, fecha_hora, estado, precio_final, notas_cliente, reagendar_solicitado, reagendar_motivo, barbero_id, servicio_id, sede_id, servicios(nombre), barberos(nombre), sedes(nombre)")
       .eq("cliente_id", cliente.id)
       .gte("fecha_hora", ahora)
       .not("estado", "in", '("cancelada","completada")')

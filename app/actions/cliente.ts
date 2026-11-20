@@ -75,6 +75,99 @@ export async function confirmarCita(citaId: string) {
   return { ok: true };
 }
 
+// ── Cancelar cita ─────────────────────────────────────────────────────────
+export async function cancelarCita(citaId: string) {
+  const { user, cliente } = await getClienteAutenticado();
+  if (!user || !cliente) return { ok: false as const, error: "No autenticado" };
+
+  const admin = createAdminClient();
+
+  const { data: cita } = await (admin.from("citas") as any)
+    .select("id, fecha_hora, estado")
+    .eq("id", citaId)
+    .eq("cliente_id", cliente.id)
+    .single();
+
+  if (!cita) return { ok: false as const, error: "Cita no encontrada" };
+  if (["completada", "cancelada"].includes(cita.estado)) {
+    return { ok: false as const, error: "Esta cita ya no se puede cancelar" };
+  }
+
+  const ahora = new Date();
+  const fechaCita = new Date(cita.fecha_hora);
+  const horasAntelacion = (fechaCita.getTime() - ahora.getTime()) / (1000 * 60 * 60);
+  const conAntelacion = horasAntelacion >= 3;
+
+  const { error } = await (admin.from("citas") as any)
+    .update({ estado: "cancelada", updated_at: new Date().toISOString() })
+    .eq("id", citaId);
+
+  if (error) return { ok: false as const, error: error.message };
+
+  const fechaStr = fechaCita.toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const aviso = conAntelacion
+    ? "✓ Canceló con más de 3 horas de antelación."
+    : "⚠️ Canceló con menos de 3 horas de antelación — pierde 1 sello (8 sellos = 9.º corte gratis).";
+
+  await (admin.from("notificaciones_crm") as any).insert({
+    tipo: "cancelacion_cliente",
+    cliente_id: cliente.id,
+    cita_id: citaId,
+    mensaje: `${cliente.nombre} canceló su cita del ${fechaStr}. ${aviso}`,
+  });
+
+  revalidatePath("/espacio-vip");
+  revalidatePath("/espacio-vip/citas");
+  revalidatePath("/admin/citas");
+  return { ok: true as const, conAntelacion };
+}
+
+// ── Reagendar cita ────────────────────────────────────────────────────────
+export async function reagendarCita(citaId: string, nuevaFechaHora: string) {
+  const { user, cliente } = await getClienteAutenticado();
+  if (!user || !cliente) return { ok: false as const, error: "No autenticado" };
+
+  const admin = createAdminClient();
+
+  const { data: cita } = await (admin.from("citas") as any)
+    .select("id, fecha_hora, estado")
+    .eq("id", citaId)
+    .eq("cliente_id", cliente.id)
+    .single();
+
+  if (!cita) return { ok: false as const, error: "Cita no encontrada" };
+  if (["completada", "cancelada"].includes(cita.estado)) {
+    return { ok: false as const, error: "Esta cita ya no se puede reagendar" };
+  }
+
+  const { error } = await (admin.from("citas") as any)
+    .update({
+      fecha_hora: nuevaFechaHora,
+      estado: "pendiente",
+      reagendar_solicitado: false,
+      reagendar_motivo: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", citaId);
+
+  if (error) return { ok: false as const, error: error.message };
+
+  const fechaAnterior = new Date(cita.fecha_hora).toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const fechaNueva = new Date(nuevaFechaHora).toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  await (admin.from("notificaciones_crm") as any).insert({
+    tipo: "reagenda_cliente",
+    cliente_id: cliente.id,
+    cita_id: citaId,
+    mensaje: `${cliente.nombre} reagendó su cita del ${fechaAnterior} al ${fechaNueva}.`,
+  });
+
+  revalidatePath("/espacio-vip");
+  revalidatePath("/espacio-vip/citas");
+  revalidatePath("/admin/citas");
+  return { ok: true as const };
+}
+
 // ── Solicitar reagendamiento ──────────────────────────────────────────────
 export async function solicitarReagendar(citaId: string, motivo: string) {
   const { user, cliente } = await getClienteAutenticado();

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createReserva } from "@/app/actions/reservas";
+import { reagendarCita } from "@/app/actions/cliente";
 import { esFestivoNacional } from "@/lib/festivos";
 import { useVipTheme } from "./VipThemeProvider";
 import { ChevronLeft } from "lucide-react";
@@ -69,7 +70,26 @@ export default function VipReservar() {
   const { theme } = useVipTheme();
   const isLight = theme === "light";
 
-  const [step, setStep]           = useState<Step>("servicio");
+  // Parámetros URL — se leen primero para usarlos como valores iniciales de estado
+  const searchParams   = useSearchParams();
+  const servicioParam  = searchParams.get("servicio");
+  const ofertaParam    = searchParams.get("oferta");
+  const precioParam    = searchParams.get("precio");
+  const extraParam     = searchParams.get("extra");
+  const franjaParam    = searchParams.get("franja");
+  const mesesParam     = searchParams.get("meses");
+  const diasParam      = searchParams.get("dias");
+
+  // Modo reagendar: pre-rellena sede/barbero/servicio y salta al paso fecha
+  const reagendarCitaId = searchParams.get("reagendar");
+  const isReagendar     = !!reagendarCitaId;
+  const preSedeId       = searchParams.get("sede_id")     ?? "";
+  const preBarberoId    = searchParams.get("barbero_id")  ?? "";
+  const preServicioId   = searchParams.get("servicio_id") ?? "";
+
+  const servicioInitRef = useRef(false);
+
+  const [step, setStep]           = useState<Step>(isReagendar ? "fecha" : "servicio");
   const [appData, setAppData]     = useState<AppData | null>(null);
   const [slots, setSlots]         = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -84,20 +104,10 @@ export default function VipReservar() {
   const [servicioPreselect, setServicioPreselect] = useState<{ nombre: string; precio: number } | null>(null);
   const [perfil, setPerfil]       = useState<{ nombre: string; email: string } | null>(null);
 
-  const searchParams   = useSearchParams();
-  const servicioParam  = searchParams.get("servicio");
-  const ofertaParam    = searchParams.get("oferta");
-  const precioParam    = searchParams.get("precio");
-  const extraParam     = searchParams.get("extra");
-  const franjaParam    = searchParams.get("franja");
-  const mesesParam     = searchParams.get("meses");
-  const diasParam      = searchParams.get("dias");
-  const servicioInitRef = useRef(false);
-
   const [form, setForm] = useState<Form>({
     nombre: "", email: "", movil: "", fecha_nacimiento: "",
-    sede_id: "", barbero_id: "", servicio_id: "",
-    fecha: "", hora: "", metodo_pago: "", notas: "",
+    sede_id: preSedeId, barbero_id: preBarberoId, servicio_id: preServicioId,
+    fecha: "", hora: "", metodo_pago: isReagendar ? "metalico" : "", notas: "",
     acepta_privacidad: true,
   });
 
@@ -185,13 +195,23 @@ export default function VipReservar() {
 
   function validarConfirmar(): boolean {
     const e: typeof errors = {};
-    if (!form.metodo_pago) e.metodo_pago = "Selecciona un método de pago";
+    if (!isReagendar && !form.metodo_pago) e.metodo_pago = "Selecciona un método de pago";
     setErrors(e); return Object.keys(e).length === 0;
   }
 
   async function handleSubmit() {
     if (!validarConfirmar()) return;
     setSubmitting(true); setSubmitError(null);
+
+    // Modo reagendar: solo actualiza fecha_hora de la cita existente
+    if (isReagendar && reagendarCitaId) {
+      const result = await reagendarCita(reagendarCitaId, `${form.fecha}T${form.hora}:00`);
+      setSubmitting(false);
+      if (result.ok) setStep("exito");
+      else setSubmitError(result.error ?? "Error al reagendar");
+      return;
+    }
+
     const ofertaStr = ofertaAplicada
       ? [ofertaAplicada, precioOferta != null ? `${precioOferta} €` : null, extraOferta ?? null].filter(Boolean).join(" · ")
       : null;
@@ -246,7 +266,9 @@ export default function VipReservar() {
   const cardSty = { background: bgCard, border: `1px solid ${border}` };
 
   // Barra de progreso
-  const pasos: Step[] = ["servicio", "fecha", "confirmar"];
+  const pasos: Step[] = isReagendar
+    ? ["fecha", "confirmar"]
+    : ["servicio", "fecha", "confirmar"];
   const pasoIdx  = pasos.indexOf(step);
   const progreso = step === "exito" ? 100 : Math.round(((pasoIdx + 1) / pasos.length) * 100);
 
@@ -282,9 +304,15 @@ export default function VipReservar() {
 
   // ── Botón de volver atrás ──────────────────────────────────────
   function BackBtn({ to }: { to: Step | "dashboard" }) {
+    function handleBack() {
+      if (to === "dashboard") { router.push("/espacio-vip"); return; }
+      // En reagendar, "volver" desde fecha va a mis citas
+      if (isReagendar && to === "servicio") { router.push("/espacio-vip/citas"); return; }
+      setStep(to);
+    }
     return (
       <button
-        onClick={() => to === "dashboard" ? router.push("/espacio-vip") : setStep(to)}
+        onClick={handleBack}
         className="flex items-center gap-1.5 text-sm mb-6 transition-colors"
         style={{ color: textMuted }}
       >
@@ -565,13 +593,21 @@ export default function VipReservar() {
     <section className="pt-8 pb-28 sm:pb-10 px-4 sm:px-6 min-h-screen" style={{ background: bg }}>
       <div className="max-w-lg mx-auto">
         <BackBtn to="fecha" />
-        <Header label="Último paso" title={<>Confirma tu <span className="gold-text">reserva</span></>} />
+        <Header
+          label="Último paso"
+          title={isReagendar
+            ? <>Confirma la <span className="gold-text">nueva fecha</span></>
+            : <>Confirma tu <span className="gold-text">reserva</span></>
+          }
+        />
 
         {/* Resumen */}
         <div className="rounded-xl p-5 mb-4" style={{ border: `1px solid ${gold}25`, background: `${gold}06` }}>
-          <p className="text-xs tracking-widest uppercase mb-4" style={{ color: gold }}>Tu reserva</p>
+          <p className="text-xs tracking-widest uppercase mb-4" style={{ color: gold }}>
+            {isReagendar ? "Nueva fecha" : "Tu reserva"}
+          </p>
           {[
-            { label: "Nombre",   value: form.nombre || perfil?.nombre || "—" },
+            ...(!isReagendar ? [{ label: "Nombre", value: form.nombre || perfil?.nombre || "—" }] : []),
             { label: "Sede",     value: sedeSel?.nombre ?? "—" },
             { label: "Barbero",  value: barberoSel?.nombre ?? "—" },
             {
@@ -580,7 +616,7 @@ export default function VipReservar() {
                 ? `${servicioPreselect.nombre}${precioOferta != null ? ` · ${precioOferta} €` : ""}`
                 : `${servicioSel?.nombre} — ${servicioSel?.duracion_minutos} min · ${servicioSel?.precio}€`,
             },
-            ...(ofertaAplicada ? [{
+            ...(!isReagendar && ofertaAplicada ? [{
               label: "Oferta",
               value: [ofertaAplicada, precioOferta != null ? `${precioOferta} €` : null, extraOferta].filter(Boolean).join(" · "),
             }] : []),
@@ -595,8 +631,8 @@ export default function VipReservar() {
           ))}
         </div>
 
-        {/* Método de pago */}
-        <div className={cardCls} style={cardSty}>
+        {/* Método de pago — oculto en reagendar */}
+        {!isReagendar && <div className={cardCls} style={cardSty}>
           <p className="text-xs tracking-widest uppercase mb-3" style={{ color: gold }}>Método de pago</p>
           <div className="space-y-2">
             {PAGOS.map(p => (
@@ -622,7 +658,8 @@ export default function VipReservar() {
               Si no acudes sin avisar con al menos 4 h de antelación, el anticipo del 50% no será reembolsado.
             </div>
           )}
-        </div>
+        </div>}
+
 
         {/* Notas opcionales */}
         <div className="mb-4">
@@ -646,7 +683,10 @@ export default function VipReservar() {
 
         <button onClick={handleSubmit} disabled={submitting}
           className="btn-gold w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-          {submitting ? "Confirmando..." : "Confirmar reserva ✦"}
+          {submitting
+            ? (isReagendar ? "Reagendando..." : "Confirmando...")
+            : (isReagendar ? "Confirmar nueva fecha ✦" : "Confirmar reserva ✦")
+          }
         </button>
       </div>
     </section>
@@ -658,9 +698,12 @@ export default function VipReservar() {
       <div className="max-w-md mx-auto text-center w-full">
         <div className="rounded-2xl p-10" style={{ border: `1px solid ${gold}30`, background: bgCard }}>
           <div className="text-5xl mb-6">✦</div>
-          <p className="section-label mb-2">Reserva confirmada</p>
+          <p className="section-label mb-2">{isReagendar ? "Cita reagendada" : "Reserva confirmada"}</p>
           <h2 className="font-serif text-3xl font-bold mb-2" style={{ color: textPrimary }}>
-            ¡Hasta <span className="gold-text">pronto</span>!
+            {isReagendar
+              ? <>¡Nueva <span className="gold-text">fecha</span> confirmada!</>
+              : <>¡Hasta <span className="gold-text">pronto</span>!</>
+            }
           </h2>
           <div className="h-px w-10 mx-auto my-4" style={{ background: `${gold}60` }} />
           <div className="text-sm space-y-1 mt-4 mb-6" style={{ color: textMuted }}>
@@ -668,23 +711,25 @@ export default function VipReservar() {
             <p>{formatFecha(form.fecha)} a las {form.hora}</p>
             <p>{barberoSel?.nombre} · {sedeSel?.nombre}</p>
             <p>{servicioSel?.nombre ?? servicioPreselect?.nombre}</p>
-            {ofertaAplicada && (
+            {ofertaAplicada && !isReagendar && (
               <p className="text-xs mt-1" style={{ color: gold }}>
                 ✦ {ofertaAplicada}
                 {precioOferta != null && <span className="ml-1">· {precioOferta} €</span>}
               </p>
             )}
           </div>
-          <p className="text-xs mb-6" style={{ color: textMuted }}>
-            Recibirás confirmación en <strong style={{ color: textPrimary }}>{form.email || perfil?.email}</strong>.
-            Recuerda avisar con al menos 4 h si necesitas cancelar.
-          </p>
-          {citaId && (
+          {!isReagendar && (
+            <p className="text-xs mb-6" style={{ color: textMuted }}>
+              Recibirás confirmación en <strong style={{ color: textPrimary }}>{form.email || perfil?.email}</strong>.
+              Recuerda avisar con al menos 4 h si necesitas cancelar.
+            </p>
+          )}
+          {citaId && !isReagendar && (
             <p className="text-[10px] font-mono mb-6" style={{ color: textMuted }}>Ref: {citaId.slice(0, 8).toUpperCase()}</p>
           )}
-          <button onClick={() => router.push("/espacio-vip")}
+          <button onClick={() => router.push(isReagendar ? "/espacio-vip/citas" : "/espacio-vip")}
             className="btn-gold inline-flex text-sm">
-            Volver al Espacio VIP →
+            {isReagendar ? "Ver mis citas →" : "Volver al Espacio VIP →"}
           </button>
         </div>
       </div>
