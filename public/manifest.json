@@ -1,15 +1,34 @@
 {
-  "name": "Monastery Barber Studio",
+  "name": "Monastery VIP",
   "short_name": "Monastery",
   "description": "Tu espacio VIP en Monastery Barber Studio — citas, beneficios y programa de fidelidad",
   "start_url": "/espacio-vip",
   "scope": "/espacio-vip",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#050505",
   "theme_color": "#050505",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "lang": "es",
-  "categories": ["lifestyle"],
+  "categories": ["lifestyle", "health", "beauty"],
+  "id": "/espacio-vip",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Nueva reserva",
+      "short_name": "Reservar",
+      "description": "Reserva tu próxima cita",
+      "url": "/reservas",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mis citas",
+      "short_name": "Citas",
+      "description": "Ver tus citas programadas",
+      "url": "/espacio-vip/citas",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

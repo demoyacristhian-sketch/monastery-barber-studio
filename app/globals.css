@@ -94,6 +94,57 @@ body {
 ::-webkit-scrollbar-track { background: #0a0a0a; }
 ::-webkit-scrollbar-thumb { background: #C9A84C; border-radius: 3px; }
 
+/* ── VIP App Theme Tokens ───────────────────────────────────────────────── */
+:root,
+[data-vip-theme="dark"] {
+  --vip-bg:        #050505;
+  --vip-bg-sec:    #0a0a0a;
+  --vip-bg-card:   #0d0d0d;
+  --vip-bg-hover:  #111111;
+  --vip-text:      #FFFFFF;
+  --vip-muted:     #888888;
+  --vip-dimmed:    #555555;
+  --vip-border:    #1f1f1f;
+  --vip-border-s:  #111111;
+  --vip-nav:       rgba(5, 5, 5, 0.97);
+  --vip-header:    rgba(5, 5, 5, 0.98);
+  --vip-input-bg:  #0d0d0d;
+  --vip-input-b:   #2a2a2a;
+}
+
+[data-vip-theme="light"] {
+  --vip-bg:        #F4EEE2;
+  --vip-bg-sec:    #EDE5D6;
+  --vip-bg-card:   #FFFFFF;
+  --vip-bg-hover:  #FAF6EF;
+  --vip-text:      #1A1210;
+  --vip-muted:     #7A6A5E;
+  --vip-dimmed:    #A8998E;
+  --vip-border:    #E5D6C3;
+  --vip-border-s:  #EDE6DA;
+  --vip-nav:       rgba(244, 238, 226, 0.97);
+  --vip-header:    rgba(244, 238, 226, 0.98);
+  --vip-input-bg:  #FFFFFF;
+  --vip-input-b:   #E0D4C2;
+}
+
+/* Light theme overrides for VIP components */
+[data-vip-theme="light"] .card-premium {
+  background: var(--vip-bg-card) !important;
+  border-color: var(--vip-border) !important;
+}
+[data-vip-theme="light"] .card-premium:hover {
+  box-shadow: 0 12px 36px rgba(0,0,0,0.12), 0 0 20px rgba(201,168,76,0.08) !important;
+}
+[data-vip-theme="light"] .vip-section {
+  background: var(--vip-bg) !important;
+}
+[data-vip-theme="light"] .vip-card-inner {
+  background: var(--vip-bg-card) !important;
+  border-color: var(--vip-border) !important;
+  color: var(--vip-text) !important;
+}
+
 .animate-fadeInUp     { animation: fadeInUp 0.8s ease forwards; }
 .animate-fadeIn       { animation: fadeIn 1s ease forwards; }
 .animate-slideInLeft  { animation: slideInLeft 0.8s ease forwards; }

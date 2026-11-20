@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import Link from "next/link";
 import SellosVisuales from "@/components/vip/SellosVisuales";
 import CitaCardCliente from "@/components/vip/CitaCardCliente";
+import InstallPrompt from "@/components/vip/InstallPrompt";
 import { Crown, Calendar, ChevronRight, Zap } from "lucide-react";
 
 type CitaVip = {
@@ -101,15 +102,15 @@ const features = [
 
 function AreaClientePublica() {
   return (
-    <section id="cuenta" className="py-16 sm:py-28 px-4 sm:px-6 bg-black">
+    <section id="cuenta" className="py-16 sm:py-28 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-20">
           <p className="section-label mb-4">Tu espacio</p>
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold">
+          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold" style={{ color: "var(--vip-text)" }}>
             Área <span className="gold-text">cliente</span>
           </h2>
           <div className="divider-gold" />
-          <p className="text-[#aaa] text-sm mt-4 max-w-md mx-auto">
+          <p className="text-sm mt-4 max-w-md mx-auto" style={{ color: "var(--vip-muted)" }}>
             Crea tu cuenta y accede a una experiencia personalizada y exclusiva
           </p>
         </div>
@@ -117,16 +118,16 @@ function AreaClientePublica() {
           {features.map(f => (
             <div key={f.title} className="card-premium p-6">
               <div className="text-3xl mb-4">{f.icon}</div>
-              <h3 className="font-semibold text-white mb-2">{f.title}</h3>
-              <p className="text-[#aaa] text-sm leading-relaxed">{f.desc}</p>
+              <h3 className="font-semibold mb-2" style={{ color: "var(--vip-text)" }}>{f.title}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--vip-muted)" }}>{f.desc}</p>
             </div>
           ))}
         </div>
         <div className="border border-[#C9A84C]/20 bg-gradient-to-r from-transparent via-[#C9A84C]/5 to-transparent p-10 text-center">
-          <h3 className="font-serif text-2xl font-bold mb-3">
+          <h3 className="font-serif text-2xl font-bold mb-3" style={{ color: "var(--vip-text)" }}>
             Tu imagen merece una <span className="gold-text">experiencia premium</span>
           </h3>
-          <p className="text-[#aaa] text-sm mb-8 max-w-md mx-auto">
+          <p className="text-sm mb-8 max-w-md mx-auto" style={{ color: "var(--vip-muted)" }}>
             Crea tu cuenta gratuita y accede a tu espacio privado en Monastery.
           </p>
           <Link href="/login" className="inline-flex btn-gold">
@@ -141,14 +142,14 @@ function AreaClientePublica() {
 // ── Cliente sin perfil aún ────────────────────────────────────────────────
 function AreaClienteNuevo({ email }: { email: string }) {
   return (
-    <section className="py-16 px-4 sm:px-6 bg-black">
+    <section className="py-16 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
       <div className="max-w-md mx-auto text-center">
-        <div className="border border-[#C9A84C]/20 p-10">
+        <div className="card-premium p-10">
           <div className="text-4xl mb-4">✦</div>
-          <h2 className="font-serif text-2xl font-bold mb-2">Bienvenido</h2>
-          <p className="text-[#999] text-sm mb-1">{email}</p>
+          <h2 className="font-serif text-2xl font-bold mb-2" style={{ color: "var(--vip-text)" }}>Bienvenido</h2>
+          <p className="text-sm mb-1" style={{ color: "var(--vip-muted)" }}>{email}</p>
           <div className="divider-gold" />
-          <p className="text-[#aaa] text-sm mt-4 mb-8">
+          <p className="text-sm mt-4 mb-8" style={{ color: "var(--vip-muted)" }}>
             Reserva tu primera cita para activar tu perfil completo en el Espacio VIP.
           </p>
           <Link href="/reservas" className="inline-flex btn-gold">
@@ -167,26 +168,27 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
   pasadas:  CitaVip[];
   membresia: any;
 }) {
-  const nivel         = (cliente.nivel as string | null | undefined) ?? membresia?.planes_membresia?.nombre ?? null;
-  const sellos        = (cliente.sellos as number | undefined) ?? 0;
-  const esVip         = (cliente.vip as boolean | undefined) ?? false;
-  const descuento     = membresia?.planes_membresia?.descuento_servicios;
+  const nivel     = (cliente.nivel as string | null | undefined) ?? membresia?.planes_membresia?.nombre ?? null;
+  const sellos    = (cliente.sellos as number | undefined) ?? 0;
+  const esVip     = (cliente.vip as boolean | undefined) ?? false;
+  const descuento = membresia?.planes_membresia?.descuento_servicios;
 
   const nivelColor = nivel === "Black" ? "#888" : nivel === "Gold" ? "#C9A84C" : nivel === "Silver" ? "#aaa" : "#666";
 
   return (
-    <section className="py-10 px-4 sm:px-6 bg-black min-h-screen">
-      <div className="max-w-5xl mx-auto space-y-10">
+    <section className="py-8 px-4 sm:px-6 min-h-screen vip-section" style={{ background: "var(--vip-bg)" }}>
+      <div className="max-w-5xl mx-auto space-y-8">
+
+        {/* Install prompt — solo visible cuando no está instalado */}
+        <InstallPrompt />
 
         {/* Saludo */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <p className="section-label mb-1">Bienvenido de vuelta</p>
-            <h2 className="font-serif text-3xl font-bold flex items-center gap-2">
+            <h2 className="font-serif text-3xl font-bold flex items-center gap-2" style={{ color: "var(--vip-text)" }}>
               {cliente.nombre}
-              {esVip && (
-                <Crown className="w-6 h-6 text-[#C9A84C]" />
-              )}
+              {esVip && <Crown className="w-6 h-6 text-[#C9A84C]" />}
             </h2>
             <div className="h-px w-16 bg-[#C9A84C]/50 mt-3" />
           </div>
@@ -209,8 +211,8 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
             },
           ].map(s => (
             <div key={s.label} className="card-premium p-5 text-center">
-              <p className="text-2xl font-bold mb-1" style={{ color: s.color ?? "#fff" }}>{s.value}</p>
-              <p className="text-[#999] text-xs tracking-widest uppercase">{s.label}</p>
+              <p className="text-2xl font-bold mb-1" style={{ color: s.color ?? "var(--vip-text)" }}>{s.value}</p>
+              <p className="text-xs tracking-widest uppercase" style={{ color: "var(--vip-muted)" }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -224,7 +226,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
                 La Orden · {nivel}
               </p>
               {descuento && (
-                <p className="text-[#aaa] text-xs mt-0.5">{descuento}% de descuento en todos los servicios</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--vip-muted)" }}>{descuento}% de descuento en todos los servicios</p>
               )}
             </div>
             <Link href="/espacio-vip/beneficios" className="btn-outline text-xs inline-flex shrink-0">
@@ -237,7 +239,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
         <div className="card-premium p-6">
           <div className="flex items-center justify-between mb-5">
             <p className="section-label">Mis sellos de fidelidad</p>
-            <span className="text-[#777] text-xs">Solo tu barbero puede añadirlos</span>
+            <span className="text-xs" style={{ color: "var(--vip-dimmed)" }}>Solo tu barbero puede añadirlos</span>
           </div>
           <SellosVisuales sellos={sellos} />
         </div>
@@ -258,7 +260,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
 
           {proximas.length === 0 ? (
             <div className="card-premium p-8 text-center">
-              <p className="text-[#888] text-sm mb-4">No tienes citas próximas.</p>
+              <p className="text-sm mb-4" style={{ color: "var(--vip-muted)" }}>No tienes citas próximas.</p>
               <Link href="/reservas" className="inline-flex btn-gold text-sm">
                 Reservar ahora →
               </Link>
@@ -269,7 +271,9 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
                 <CitaCardCliente key={cita.id} cita={cita} />
               ))}
               {proximas.length > 3 && (
-                <Link href="/espacio-vip/citas" className="flex items-center justify-center gap-1.5 text-[#999] text-xs py-3 border border-[#111] hover:text-[#888] transition-colors">
+                <Link href="/espacio-vip/citas"
+                  className="flex items-center justify-center gap-1.5 text-xs py-3 transition-colors"
+                  style={{ border: "1px solid var(--vip-border)", color: "var(--vip-muted)" }}>
                   Ver {proximas.length - 3} citas más <ChevronRight className="w-3 h-3" />
                 </Link>
               )}
@@ -296,21 +300,23 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
 
         {/* Accesos rápidos */}
         <div className="grid sm:grid-cols-3 gap-3">
-          <Link href="/espacio-vip/beneficios" className="card-premium p-5 flex items-center gap-3 group hover:border-[#C9A84C]/30 transition-colors">
+          <Link href="/espacio-vip/beneficios"
+            className="card-premium p-5 flex items-center gap-3 group hover:border-[#C9A84C]/30 transition-colors">
             <Zap className="w-5 h-5 text-[#C9A84C] shrink-0" />
             <div>
-              <p className="text-white text-sm font-medium">Ofertas VIP</p>
-              <p className="text-[#888] text-xs">Descuentos exclusivos</p>
+              <p className="text-sm font-medium" style={{ color: "var(--vip-text)" }}>Ofertas VIP</p>
+              <p className="text-xs" style={{ color: "var(--vip-muted)" }}>Descuentos exclusivos</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#777] ml-auto group-hover:text-[#C9A84C] transition-colors" />
+            <ChevronRight className="w-4 h-4 ml-auto text-[#C9A84C] group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <Link href="/espacio-vip/perfil" className="card-premium p-5 flex items-center gap-3 group hover:border-[#C9A84C]/30 transition-colors">
+          <Link href="/espacio-vip/perfil"
+            className="card-premium p-5 flex items-center gap-3 group hover:border-[#C9A84C]/30 transition-colors">
             <span className="text-xl shrink-0">✦</span>
             <div>
-              <p className="text-white text-sm font-medium">Mi perfil</p>
-              <p className="text-[#888] text-xs">Editar mis datos</p>
+              <p className="text-sm font-medium" style={{ color: "var(--vip-text)" }}>Mi perfil</p>
+              <p className="text-xs" style={{ color: "var(--vip-muted)" }}>Editar mis datos</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#777] ml-auto group-hover:text-[#C9A84C] transition-colors" />
+            <ChevronRight className="w-4 h-4 ml-auto text-[#C9A84C] group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link href="/reservas" className="btn-gold flex items-center justify-center text-sm py-4">
             + Nueva reserva

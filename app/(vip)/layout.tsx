@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import SwRegister from "@/components/vip/SwRegister";
+import { VipThemeProvider } from "@/components/vip/VipThemeProvider";
 
 export const viewport: Viewport = {
   themeColor: "#050505",
@@ -24,9 +25,9 @@ export const metadata: Metadata = {
 
 export default function VipLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <VipThemeProvider>
       <SwRegister />
       {children}
-    </>
+    </VipThemeProvider>
   );
 }
