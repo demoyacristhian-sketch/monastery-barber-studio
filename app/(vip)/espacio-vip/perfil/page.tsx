@@ -147,7 +147,11 @@ export default function PerfilPage() {
               </div>
 
               {feedback && (
-                <p className={`text-xs px-3 py-2 border ${feedback.ok ? "text-emerald-400 border-emerald-900/40 bg-emerald-950/20" : "text-red-400 border-red-900/40 bg-red-950/20"}`}>
+                <p className="text-xs px-3 py-2"
+                  style={feedback.ok
+                    ? { color: "#10B981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }
+                    : { color: "#EF4444", border: "1px solid rgba(239,68,68,0.3)",  background: "rgba(239,68,68,0.06)" }
+                  }>
                   {feedback.msg}
                 </p>
               )}
@@ -265,7 +269,11 @@ export default function PerfilPage() {
             </div>
 
             {feedback && (
-              <p className={`text-xs px-3 py-2 border ${feedback.ok ? "text-emerald-400 border-emerald-900/40 bg-emerald-950/20" : "text-red-400 border-red-900/40 bg-red-950/20"}`}>
+              <p className="text-xs px-3 py-2"
+                style={feedback.ok
+                  ? { color: "#10B981", border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)" }
+                  : { color: "#EF4444", border: "1px solid rgba(239,68,68,0.3)",  background: "rgba(239,68,68,0.06)" }
+                }>
                 {feedback.msg}
               </p>
             )}

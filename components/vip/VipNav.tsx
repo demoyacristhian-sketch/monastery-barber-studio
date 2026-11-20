@@ -4,9 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
-import { LayoutDashboard, Calendar, User, Star, Tag, LogOut, Sun, Moon, Download } from "lucide-react";
+import { LayoutDashboard, Calendar, User, Star, Tag, LogOut, Sun, Moon, Download, Share, CheckCircle, X, ArrowUp } from "lucide-react";
 import { useVipTheme } from "./VipThemeProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const ITEMS = [
   { href: "/espacio-vip",            label: "Inicio",     icon: LayoutDashboard, exact: true },
@@ -16,13 +16,48 @@ const ITEMS = [
   { href: "/espacio-vip/beneficios", label: "Beneficios", icon: Star            },
 ];
 
+function detectPlatformNav() {
+  if (typeof window === "undefined") return null;
+  const ua = navigator.userAgent;
+  if (/iphone|ipad|ipod/i.test(ua)) return "ios";
+  if (/android/i.test(ua)) return "android";
+  return "desktop";
+}
+
 export default function VipNav({ nombre }: { nombre: string }) {
   const pathname    = usePathname();
   const router      = useRouter();
   const supabase    = createClient();
   const { theme, toggle } = useVipTheme();
   const isLight     = theme === "light";
-  const [closing, setClosing] = useState(false);
+  const [closing, setClosing]           = useState(false);
+  const [appInstalled, setAppInstalled] = useState(true); // asumir instalada hasta confirmar
+  const [platform, setPlatform]         = useState<"ios" | "android" | "desktop" | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showGuide, setShowGuide]       = useState(false);
+
+  useEffect(() => {
+    const installed =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
+    setAppInstalled(installed);
+    if (!installed) setPlatform(detectPlatformNav());
+
+    const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  async function handleInstalar() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      if (outcome === "accepted") setAppInstalled(true);
+    } else {
+      setShowGuide(true);
+    }
+  }
 
   async function cerrarSesion() {
     setClosing(true);
@@ -112,6 +147,19 @@ export default function VipNav({ nombre }: { nombre: string }) {
           style={{ filter: isLight ? "brightness(0.2)" : "none" }}
         />
         <div className="flex items-center gap-1.5">
+          {/* Instalar app — solo cuando no está instalada */}
+          {!appInstalled && platform !== "desktop" && (
+            <button
+              onClick={handleInstalar}
+              className="p-2 rounded-lg transition-all"
+              style={{ color: "#C9A84C", background: "rgba(201,168,76,0.1)" }}
+              title="Instalar app"
+              aria-label="Instalar app en tu teléfono"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          )}
+
           {/* Theme toggle */}
           <button
             onClick={toggle}
@@ -133,6 +181,86 @@ export default function VipNav({ nombre }: { nombre: string }) {
           </button>
         </div>
       </header>
+
+      {/* ── Modal guía de instalación ── */}
+      {showGuide && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
+          onClick={() => setShowGuide(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl overflow-hidden"
+            style={{ background: isLight ? "#FFFFFF" : "#0d0d0d", border: "1px solid rgba(201,168,76,0.25)" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4"
+              style={{ borderBottom: "1px solid rgba(201,168,76,0.12)" }}>
+              <div>
+                <p className="font-bold text-sm" style={{ color: isLight ? "#1A1210" : "#FFFFFF" }}>
+                  {platform === "ios" ? "Instalar en iPhone / iPad" : "Instalar en Android"}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: isLight ? "#7A6A5E" : "#999" }}>
+                  Acceso directo desde tu pantalla de inicio
+                </p>
+              </div>
+              <button onClick={() => setShowGuide(false)} style={{ color: isLight ? "#7A6A5E" : "#999" }}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="px-5 py-5 space-y-4">
+              {platform === "ios" ? (
+                <>
+                  {[
+                    { n: "1", icon: <Share className="w-5 h-5 text-[#C9A84C]" />, title: "Toca el botón Compartir", desc: "El ícono □↑ en la barra inferior de Safari" },
+                    { n: "2", icon: <ArrowUp className="w-5 h-5 text-[#C9A84C]" />, title: 'Desplázate y toca', desc: '"Añadir a pantalla de inicio"' },
+                    { n: "3", icon: <CheckCircle className="w-5 h-5 text-[#C9A84C]" />, title: 'Toca "Añadir"', desc: "La app aparece en tu pantalla de inicio" },
+                  ].map(s => (
+                    <div key={s.n} className="flex gap-3 items-start">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                        style={{ background: "rgba(201,168,76,0.1)", color: "#C9A84C" }}>{s.n}</div>
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: isLight ? "#1A1210" : "#FFFFFF" }}>{s.title}</p>
+                        <p className="text-xs" style={{ color: isLight ? "#7A6A5E" : "#999" }}>{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(201,168,76,0.07)", color: "#C9A84C" }}>
+                    ⚠️ Debe abrirse en Safari para poder instalar
+                  </div>
+                </>
+              ) : (
+                <>
+                  {[
+                    { n: "1", title: "Abre el menú de Chrome", desc: "Toca los tres puntos ⋮ en la esquina superior derecha" },
+                    { n: "2", title: 'Busca "Instalar app"', desc: '"Añadir a pantalla de inicio" también funciona' },
+                    { n: "3", title: "Confirma la instalación", desc: "La app aparece en tu pantalla de inicio" },
+                  ].map(s => (
+                    <div key={s.n} className="flex gap-3 items-start">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                        style={{ background: "rgba(201,168,76,0.1)", color: "#C9A84C" }}>{s.n}</div>
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: isLight ? "#1A1210" : "#FFFFFF" }}>{s.title}</p>
+                        <p className="text-xs" style={{ color: isLight ? "#7A6A5E" : "#999" }}>{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-3 rounded-xl text-xs text-center" style={{ background: "rgba(201,168,76,0.07)", color: "#C9A84C" }}>
+                    ⚠️ Debe abrirse en Chrome para poder instalar
+                  </div>
+                </>
+              )}
+
+              <button onClick={() => setShowGuide(false)}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: "rgba(201,168,76,0.12)", color: "#C9A84C" }}>
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Mobile: fixed bottom tab bar ── */}
       <nav

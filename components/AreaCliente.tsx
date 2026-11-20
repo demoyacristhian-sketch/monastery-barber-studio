@@ -100,7 +100,7 @@ export default async function AreaCliente() {
 // ── Vista pública ─────────────────────────────────────────────────────────
 const features = [
   { icon: "📅", title: "Reservas exprés",      desc: "Tus datos guardados, reserva en segundos." },
-  { icon: "⭐", title: "Sellos de fidelidad",  desc: "10 sellos = 1 corte gratis." },
+  { icon: "⭐", title: "Sellos de fidelidad",  desc: "8 sellos = 9.º corte gratis." },
   { icon: "👑", title: "Membresías VIP",        desc: "Descuentos exclusivos y prioridad de agenda." },
   { icon: "🎁", title: "Ofertas exclusivas",    desc: "Promociones solo para miembros." },
   { icon: "✂️", title: "Tendencias",           desc: "Contenido editorial sobre cortes y estilos." },
@@ -186,7 +186,7 @@ function AreaClienteNuevo({ email, nombre }: { email: string; nombre?: string })
           <div className="space-y-3">
             {[
               { icon: "📅", text: "Reservas exprés con tus datos guardados" },
-              { icon: "⭐", text: "10 sellos = 1 corte gratis" },
+              { icon: "⭐", text: "8 sellos = 9.º corte gratis" },
               { icon: "👑", text: "Membresías VIP con descuentos exclusivos" },
               { icon: "🎁", text: "Ofertas y promociones solo para miembros" },
             ].map(f => (
@@ -248,7 +248,7 @@ function Dashboard({ cliente, proximas, pasadas, membresia }: {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total visitas",   value: String(cliente.total_visitas ?? 0) },
-            { label: "Sellos",          value: `${sellos}/10` },
+            { label: "Sellos",          value: `${sellos}/8` },
             { label: "Nivel",           value: nivel ?? "Estándar", color: nivelColor },
             {
               label: "Última visita",

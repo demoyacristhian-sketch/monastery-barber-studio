@@ -164,14 +164,15 @@ function OfertaCard({ o }: { o: OfertaItem }) {
         </div>
       )}
       {!activa && o.meses && (
-        <div className="absolute top-3 right-3 text-[9px] px-1.5 py-0.5 bg-[#333] text-[#aaa] font-medium tracking-wider">
+        <div className="absolute top-3 right-3 text-[9px] px-1.5 py-0.5 font-medium tracking-wider"
+          style={{ background: "var(--vip-estado-bg)", color: "var(--vip-muted)" }}>
           Solo en {o.meses.split(",").map(m => ["","ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][parseInt(m)]??m).join(", ")}
         </div>
       )}
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[#999] text-[10px] tracking-widest uppercase mb-0.5">{o.tag}</p>
-          <h3 className="font-serif font-bold text-white text-base leading-tight">{o.titulo}</h3>
+          <p className="text-[10px] tracking-widest uppercase mb-0.5" style={{ color: "var(--vip-muted)" }}>{o.tag}</p>
+          <h3 className="font-serif font-bold text-base leading-tight" style={{ color: "var(--vip-text)" }}>{o.titulo}</h3>
         </div>
         <span
           className="text-xs font-bold px-2 py-0.5 rounded-sm shrink-0 whitespace-nowrap mt-1"
@@ -181,38 +182,38 @@ function OfertaCard({ o }: { o: OfertaItem }) {
         </span>
       </div>
 
-      <p className="text-[#999] text-sm leading-relaxed flex-1">{o.desc}</p>
+      <p className="text-sm leading-relaxed flex-1" style={{ color: "var(--vip-muted)" }}>{o.desc}</p>
 
       {/* Precio */}
       {o.precioOferta && (
         <div className="flex items-baseline gap-2">
-          <span className="text-[#C9A84C] font-bold">{o.precioOferta} €</span>
+          <span className="font-bold" style={{ color: "#C9A84C" }}>{o.precioOferta} €</span>
           {o.precioOriginal && (
-            <span className="text-[#888] text-xs line-through">{o.precioOriginal} €</span>
+            <span className="text-xs line-through" style={{ color: "var(--vip-dimmed)" }}>{o.precioOriginal} €</span>
           )}
         </div>
       )}
 
       <div className="space-y-0.5 mt-auto">
-        <p className="text-[#777] text-xs flex items-center gap-1.5">
+        <p className="text-xs flex items-center gap-1.5" style={{ color: "var(--vip-muted)" }}>
           <span style={{ color: o.color }}>◆</span>
           {o.condicion}
         </p>
         {o.extra && (
-          <p className="text-[#888] text-xs pl-4">Incluye: {o.extra}</p>
+          <p className="text-xs pl-4" style={{ color: "var(--vip-dimmed)" }}>Incluye: {o.extra}</p>
         )}
       </div>
 
       {activa ? (
         <Link
           href={href}
-          className="text-xs mt-1 transition-colors hover:text-white"
+          className="text-xs mt-1 transition-opacity hover:opacity-70"
           style={{ color: o.color }}
         >
           Reservar esta oferta →
         </Link>
       ) : (
-        <span className="text-xs mt-1 text-[#777] cursor-not-allowed">
+        <span className="text-xs mt-1 cursor-not-allowed" style={{ color: "var(--vip-dimmed)" }}>
           No disponible en este periodo
         </span>
       )}
@@ -226,17 +227,17 @@ export default async function OfertasVipPage() {
   if (!user) redirect("/login?redirect=/espacio-vip/ofertas");
 
   return (
-    <main className="min-h-screen bg-black pt-6 pb-24 sm:py-10 px-4 sm:px-6">
+    <main className="min-h-screen pt-6 pb-24 sm:py-10 px-4 sm:px-6" style={{ background: "var(--vip-bg)" }}>
       <div className="max-w-5xl mx-auto space-y-14">
 
         {/* Header */}
         <div>
           <p className="section-label mb-1">Solo para ti</p>
-          <h1 className="font-serif text-3xl font-bold">
+          <h1 className="font-serif text-3xl font-bold" style={{ color: "var(--vip-text)" }}>
             Ofertas <span className="gold-text">& Promociones</span>
           </h1>
           <div className="h-px w-12 bg-[#C9A84C]/50 mt-3" />
-          <p className="text-[#999] text-sm mt-3">
+          <p className="text-sm mt-3" style={{ color: "var(--vip-muted)" }}>
             Precios especiales, extras incluidos y descuentos exclusivos disponibles ahora mismo.
             Haz clic en cualquier oferta para reservar con el precio ya aplicado.
           </p>
@@ -254,14 +255,14 @@ export default async function OfertasVipPage() {
           </div>
         </div>
 
-        <div className="h-px bg-[#111]" />
+        <div className="h-px" style={{ background: "var(--vip-border)" }} />
 
         {/* Todas las ofertas */}
         <div>
           <div className="flex items-center gap-3 mb-6">
             <span className="text-2xl">✦</span>
             <p className="section-label">Todas las ofertas disponibles</p>
-            <div className="flex-1 h-px ml-2 bg-[#333]" />
+            <div className="flex-1 h-px ml-2" style={{ background: "var(--vip-border)" }} />
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {OFERTAS_PUBLICAS.map(o => <OfertaCard key={o.id} o={o} />)}
@@ -269,8 +270,8 @@ export default async function OfertasVipPage() {
         </div>
 
         {/* Nota */}
-        <div className="border border-[#111] bg-[#050505] p-6 text-center">
-          <p className="text-[#888] text-xs">
+        <div className="p-6 text-center" style={{ border: "1px solid var(--vip-border)", background: "var(--vip-bg-card)" }}>
+          <p className="text-xs" style={{ color: "var(--vip-muted)" }}>
             Promociones válidas de lunes a viernes. No aplicables en sábado. Al seleccionar una oferta,
             el precio especial se aplica automáticamente en tu reserva.
           </p>

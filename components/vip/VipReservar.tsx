@@ -676,7 +676,8 @@ export default function VipReservar() {
         </div>
 
         {submitError && (
-          <p className="text-red-400 text-sm border border-red-900/30 bg-red-950/20 px-4 py-3 mb-4 rounded-lg">
+          <p className="text-sm px-4 py-3 mb-4 rounded-lg"
+            style={{ color: "#EF4444", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.06)" }}>
             {submitError}
           </p>
         )}
